@@ -1,0 +1,127 @@
+Alle Spielvideos: Pfad unter MovieSwap/Movies/ | Originalformat
+Ersatz unter genau diesem Pfad ablegen. Fam-Videos: Greenscreen RGB(0,255,0), Figur oben mittig.
+
+Bacchus/Movie/Event/T_EVENT_010_090.mp4
+    video avc1 1320x600 1.08s 24.00fps; audio mp4a
+Bacchus/Movie/Event/T_PRERENDER_DOOR_OPEN.mp4
+    video avc1 2560x1440 3.00s 30.00fps
+Bacchus/Movie/Event/T_PRERENDER_TITLE.mp4
+    video avc1 2560x1440 3.77s 30.00fps
+Bacchus/Movie/Event/T_PRERENDER_TOILET_STAIRS.mp4
+    video avc1 2560x1440 4.62s 24.00fps
+Bacchus/Movie/Fam/T_FAM_BOW_A.mp4
+    video avc1 2560x1440 1.42s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_CHEERS_A_TYPEA.mp4
+    video avc1 2560x1440 1.38s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_CHEERS_A_TYPEA_Still.mp4
+    video avc1 2560x1440 0.25s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_CHEERS_A_TYPEB.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_CHEERS_A_TYPEC_01.mp4
+    video avc1 2560x1440 1.62s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_A_KEY.mp4
+    video avc1 2560x1440 2.88s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_A_TYPEA_01.mp4
+    video avc1 2560x1440 3.29s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_A_TYPEA_02.mp4
+    video avc1 2560x1440 3.58s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_A_TYPEC_01.mp4
+    video avc1 2560x1440 3.50s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_A_TYPEC_02.mp4
+    video avc1 2560x1440 4.33s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_B_TYPEA_01.mp4
+    video avc1 2560x1440 2.62s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_DRINK_B_TYPEA_02.mp4
+    video avc1 2560x1440 2.92s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_PUKE_A_03.mp4
+    video avc1 2560x1440 1.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_RESULT_A_TYPEA_02.mp4
+    video avc1 2560x1440 0.54s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_RESULT_A_TYPEB_02.mp4
+    video avc1 2560x1440 0.54s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_RESULT_A_TYPEC.mp4
+    video avc1 2560x1440 0.96s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_SHUFFLE_A_TYPEB.mp4
+    video avc1 2560x1440 0.96s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEB.mp4
+    video avc1 2560x1440 1.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEB_02.mp4
+    video avc1 2560x1440 0.50s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_01.mp4
+    video avc1 2560x1440 0.25s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_03.mp4
+    video avc1 2560x1440 0.25s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_04.mp4
+    video avc1 2560x1440 1.96s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_05.mp4
+    video avc1 2560x1440 1.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_06.mp4
+    video avc1 2560x1440 0.79s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_STANDBY_A_TYPEC_07.mp4
+    video avc1 2560x1440 1.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_SUGGEST_A_TYPEA.mp4
+    video avc1 2560x1440 0.58s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_SUGGEST_A_TYPEB.mp4
+    video avc1 2560x1440 0.58s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_SUGGEST_A_TYPEC.mp4
+    video avc1 2560x1440 0.58s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_WIN_A_TYPEB.mp4
+    video avc1 2560x1440 0.50s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_YES_A_TYPEA.mp4
+    video avc1 2560x1440 0.33s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_YES_A_TYPEB.mp4
+    video avc1 2560x1440 0.33s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/T_FAM_YES_A_TYPEC.mp4
+    video avc1 2560x1440 0.33s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/DRINK_NEW/T_FAM_DRINK_A_TYPEA_01.mp4
+    video avc1 3840x2160 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_01/T_FAM_STANDBY_A_TYPEA_01.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_02/T_FAM_STANDBY_A_TYPEA_02.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_03/T_FAM_STANDBY_A_TYPEA_03.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_04/T_FAM_STANDBY_A_TYPEA_04.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_05/T_FAM_STANDBY_A_TYPEA_05.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_06/T_FAM_STANDBY_A_TYPEA_06.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_07/T_FAM_STANDBY_A_TYPEA_07.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_08/T_FAM_STANDBY_A_TYPEA_08.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_09/T_FAM_STANDBY_A_TYPEA_09.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_10/T_FAM_STANDBY_A_TYPEA_10.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_11/T_FAM_STANDBY_A_TYPEA_11.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_12/T_FAM_STANDBY_A_TYPEA_12.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_13/T_FAM_STANDBY_A_TYPEA_13.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_14/T_FAM_STANDBY_A_TYPEA_14.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_15/T_FAM_STANDBY_A_TYPEA_15.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Fam/STANDBY_A_TYPEA_20261014/T_FAM_STANDBY_A_TYPEA_MABATAKI/T_FAM_STANDBY_A_TYPEA_MABATAKI.mp4
+    video avc1 2560x1440 2.00s 24.00fps; audio mp4a
+Bacchus/Movie/Logo/AllianceArts_logo_VI_short.mp4
+    video avc1 1920x1080 1.67s 29.97fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_BLOODVOMIT_A.mp4
+    video avc1 3840x2160 4.00s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_HAMMER_A.mp4
+    video avc1 2560x1440 3.38s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_ICEPICK_A.mp4
+    video avc1 2560x1440 3.38s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_LIGHTER_A.mp4
+    video avc1 2560x1440 3.38s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_PRAY_A.mp4
+    video avc1 2560x1440 4.12s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_PRAY_SOUL_A.mp4
+    video avc1 2560x1440 4.12s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PLAYER_TWOHAND_A.mp4
+    video avc1 2560x1440 5.96s 24.00fps; audio mp4a
+Bacchus/Movie/Player/T_PRERENDER_CRIME.mp4
+    video avc1 2560x1440 6.23s 30.00fps; audio mp4a

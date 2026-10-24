@@ -1,0 +1,40 @@
+# Machine-local tools, extracted game assets, and research output
+/local/
+/FModel/
+/Original-Animationen/
+/Asset-Liste.txt
+/tools/pak_files.txt
+/tools/utoc_files.txt
+
+# Rebuild release packages from source
+/dist/
+/scratch/
+/.superpowers/
+/.worktrees/
+
+# Runtime output and personal replacement media
+**/*_out.txt
+**/positions.txt
+**/bar.png
+**/bar.jpg
+**/game.png
+**/game.jpg
+**/*_previous.png
+**/Movies/
+*.log
+*.usmap
+*.pak
+*.utoc
+*.ucas
+*.mp4
+*.exe
+*.dll
+
+# Python and editor state
+__pycache__/
+*.py[cod]
+.venv/
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
