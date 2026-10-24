@@ -40,10 +40,12 @@ Archive traversal/collisions; partial-write rollback; manually installed mods; c
 
 - [x] Update user/developer/catalogue docs and contributor guidance. Check links and staged files.
 - [x] Review code/UI with a fresh reviewer, fix material findings, and rerun justified checks.
-- [ ] Publish source through GitHub, run Windows/Linux build jobs, inspect results, and publish the verified artifacts in a release. Verify repository and artifact URLs.
+- [x] Publish source through GitHub, run Windows/Linux build jobs, inspect results, and publish the verified artifacts in a release. Verify repository and artifact URLs.
 
 ## Progress
 
 Implementation has its own managed worktree. Native Qt desktop is not a web/iOS/Android surface; apply accessibility and Operate-mode principles directly, without a web scaffold or mobile-specific design.
 
 Validation: 60 tests completed successfully, with one Windows symbolic-link privilege skip and native junction coverage passing. Actual official UE4SS ZIP validated. GitHub Windows/Linux builds and bundled startup passed. The CI-built Windows bundle also starts on the maintainer machine. A local Python 3.14 frozen Qt build failed; distribution builds are now guarded to Python 3.12, matching CI. In-game behavior remains unverified.
+
+Delivery complete: PR #1 merged, manager-v0.1.0 prerelease published with Windows ZIP and Linux x86-64 tar.gz. Release workflow 40139579787 passed both platform builds and packaged startup checks. The downloaded Windows release executable also passed startup on the maintainer machine. Live main catalogue fetch/cache and actual UE4SS installation into a disposable game folder passed. Original workspace synchronized; installed game untouched.
