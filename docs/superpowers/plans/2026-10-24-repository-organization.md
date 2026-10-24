@@ -28,27 +28,29 @@
 
 ## Task 1: Organize sources and preserve local material
 
-- [ ] Record a file/hash manifest and verify all move targets are inside the workspace.
-- [ ] Move playable mods to `Mods/`, diagnostics to `diagnostics/`, research/tool binaries to `local/`.
-- [ ] Add `.gitignore` and `.gitattributes`; update FamSwap packaging source paths.
-- [ ] Verify moved file hashes and run `py tools/build_famswap_package.py 1.0`.
+- [x] Record a file/hash manifest and verify all move targets are inside the workspace.
+- [x] Move playable mods to `Mods/`, diagnostics to `diagnostics/`, research/tool binaries to `local/`.
+- [x] Add `.gitignore` and `.gitattributes`; update FamSwap packaging source paths.
+- [x] Verify moved file hashes and run `py tools/build_famswap_package.py 1.0`.
 
 ## Task 2: Write installation and contributor documentation
 
-- [ ] Create root README, shared installation/troubleshooting guides, and four mod READMEs.
-- [ ] Document diagnostics and analysis tools; update `AGENTS.md` and add portable project notes.
-- [ ] Check local Markdown links and source-specific keybindings, paths, and limitations.
+- [x] Create root README, shared installation/troubleshooting guides, and four mod READMEs.
+- [x] Document diagnostics and analysis tools; update `AGENTS.md` and add portable project notes.
+- [x] Check local Markdown links and source-specific keybindings, paths, and limitations.
 
 ## Task 3: Validate and publish
 
-- [ ] Check Python 3.8 syntax, PowerShell syntax, and built ZIP contents.
-- [ ] Test packaged installer with missing/present UE4SS, user images, and example-mod configuration.
-- [ ] Initialize Git, inspect staged file inventory, and commit the organized project.
-- [ ] Review the final tree; correct material findings before pushing.
-- [ ] Create the public repository with GitHub CLI, push, and verify remote content/visibility.
+- [x] Check Python 3.8 syntax, PowerShell syntax, and built ZIP contents.
+- [x] Test packaged installer with missing/present UE4SS, user images, and example-mod configuration.
+- [x] Initialize Git, inspect staged file inventory, and commit the organized project.
+- [x] Review the final tree; correct material findings before pushing.
+- [x] Create the public repository with GitHub CLI, push, and verify remote content/visibility.
 
 ## Execution Notes
 
 Work in place because this task organizes an existing non-Git workspace; an isolated Git worktree is unavailable before repository initialization. Runtime Lua is relocated without edits. The packaging path adjustment is validated by building and inspecting its real distributable; no new runtime feature is introduced.
 
 Review found existing installer safety gaps: example activation markers were retained and PowerShell serialization collapsed empty/singleton JSON arrays. New `tests/test_installer.py` regression tests reproduced both failures before minimal fixes were applied. All three tests now pass, including checks that unrelated mod configuration and user images survive installation.
+
+Final verification: 170 task-local checks passed; all three committed installer tests passed, including a fresh Git checkout. The fresh checkout built the FamSwap package and stayed clean. Reviewer findings were resolved. GitHub confirmed PUBLIC visibility, default branch main, the expected source-only tree, and matching local/remote commit IDs. FModel remained ignored in place because its running process held a file lock. In-game behavior and live UE4SS downloading were not re-tested.
