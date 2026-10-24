@@ -18,7 +18,43 @@
 ]]
 
 local ModRoot = "ue4ss/Mods/MovieSwap/Movies/"   -- relativ zu Binaries/Win64
-local ScanIntervalMs = 2000
+local Config = { ScanIntervalMs = 2000, ReloadKey = Key.F11 }
+
+-- The manager writes this optional table separately from the versioned mod files.
+-- Keep this loader local so manually copied mods work without manager components.
+do
+    local Rules = {
+        ScanIntervalMs = { Kind = "number", Min = 100, Max = 60000 },
+        ReloadKey = { Kind = "key" },
+    }
+    local AllowedKeys = {
+        HOME = true, END = true, PAGE_UP = true, PAGE_DOWN = true,
+        INSERT = true, DELETE = true, SPACE = true, ZERO = true,
+        ONE = true, TWO = true, THREE = true, FOUR = true, FIVE = true,
+        SIX = true, SEVEN = true, EIGHT = true, NINE = true,
+    }
+    for i = 1, 12 do AllowedKeys["F" .. i] = true end
+    for i = string.byte("A"), string.byte("Z") do AllowedKeys[string.char(i)] = true end
+    local Ok, Settings = pcall(dofile, "ue4ss/Mods/MovieSwap/settings.lua")
+    if Ok and type(Settings) == "table" then
+        for Name, Rule in pairs(Rules) do
+            local Value = Settings[Name]
+            if Rule.Kind == "key" then
+                if type(Value) == "string" and AllowedKeys[Value] and Key[Value] ~= nil then
+                    Config[Name] = Key[Value]
+                end
+            elseif Rule.Kind == "number" then
+                if type(Value) == "number" and Value == Value and Value >= Rule.Min and Value <= Rule.Max then
+                    Config[Name] = Value
+                end
+            elseif Rule.Kind == "boolean" then
+                if type(Value) == "boolean" then Config[Name] = Value end
+            elseif Rule.Kind == "enum" then
+                if type(Value) == "string" and Rule.Values[Value] then Config[Name] = Value end
+            end
+        end
+    end
+end
 local ScanCount = 0
 
 local Swapped = {}      -- [FullName des FileMediaSource] = neuer Pfad
@@ -78,7 +114,7 @@ local function Scan(verbose)
 end
 
 -- Die Media-Source-Assets werden zu unterschiedlichen Zeitpunkten geladen, daher regelmäßig prüfen.
-LoopAsync(ScanIntervalMs, function()
+LoopAsync(Config.ScanIntervalMs, function()
     ScanCount = ScanCount + 1
     ExecuteInGameThread(function()
         local ok, err = pcall(Scan, false)
@@ -87,7 +123,7 @@ LoopAsync(ScanIntervalMs, function()
     return false
 end)
 
-RegisterKeyBind(Key.F11, function()
+RegisterKeyBind(Config.ReloadKey, function()
     ExecuteInGameThread(function()
         Swapped = {}
         local ok, err = pcall(Scan, true)

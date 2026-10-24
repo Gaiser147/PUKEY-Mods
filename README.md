@@ -13,6 +13,10 @@ Explore with a free camera, adjust lighting, or replace Fam's images and videos.
 
 ## Quick start
 
+The recommended route is the **[PUKEY Mod Manager](docs/mod-manager.md)**: download its Windows or Linux desktop bundle from [Releases](https://github.com/Gaiser147/PUKEY-Mods/releases), select the game folder, install UE4SS if needed, and choose your mods. It also manages updates, activation, settings, FamSwap images, and MovieSwap video imports. Linux/Proton gameplay compatibility remains unverified.
+
+For manual installation instead:
+
 1. Download this repository using **Code → Download ZIP** and extract it, or clone it:
    ```powershell
    git clone https://github.com/Gaiser147/PUKEY-Mods.git
@@ -35,6 +39,8 @@ Game or UE4SS updates can require changes. Compatibility with the full game has 
 ## Documentation
 
 - [Shared installation, activation, updates, and uninstall](docs/installation.md)
+- [Central desktop mod manager](docs/mod-manager.md)
+- [Add future mods to the catalogue](docs/mod-catalogue.md)
 - [Troubleshooting and known limitations](docs/troubleshooting.md)
 - [Diagnostic mods](diagnostics/README.md)
 - [Developer workflow and package building](docs/development.md)
@@ -46,6 +52,8 @@ Game or UE4SS updates can require changes. Compatibility with the full game has 
 
 ```text
 Mods/           FreeCam, LightTools, FamSwap, MovieSwap
+manager/        Cross-platform desktop installer and configuration
+catalog.json    Versioned mod catalogue read by the manager
 diagnostics/    EditionProbe, FamProbe, MediaProbe, UsmapDump
 docs/           Installation, troubleshooting, and development notes
 tools/          Python and PowerShell utilities

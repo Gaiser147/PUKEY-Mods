@@ -4,41 +4,38 @@
 
 UE4SS Lua mods for the Windows Steam demo of **PUKEY GODDESS SHOT TRICK** (AppID `5253020`).
 
-- `Mods/`: FreeCam, LightTools, FamSwap, and MovieSwap; entry points are `Mods/<Mod>/Scripts/main.lua`.
-- `diagnostics/`: EditionProbe, FamProbe, MediaProbe, and UsmapDump. Keep diagnostic mods disabled unless needed.
-- `tools/`: Python analysis, image preparation, and packaging scripts; `image_compose.ps1` provides Windows WIC/WPF image processing.
-- `tests/`: Windows installer regression tests.
-- `dist-src/`: release documentation and installer templates; `dist/`: generated packages.
-- `docs/`: installation, troubleshooting, development, and runtime notes; `Mods/FamSwap/examples/`: synthetic images.
-- Ignored `local/`: extracted videos, indexes, and dumps. An existing in-use `FModel/` installation is ignored in place.
-
-Read `docs/project-notes.md` for engine findings; detailed notes remain in the game installation's `CLAUDE.md`. Check against current source.
+- `Mods/`: FreeCam, LightTools, FamSwap, MovieSwap; entry points are `Scripts/main.lua` within each mod.
+- `manager/`: Qt desktop application, validated GitHub downloads, Steam discovery, transactional installation, configuration, and media composition.
+- `catalog.json`: declarative mod payloads/settings; see `docs/mod-catalogue.md` before extending it.
+- `diagnostics/`: default-disabled inspection mods. Keep probes out of the playable catalogue.
+- `tests/`: standard-library backend, installer, Qt, media, and Lua-configuration tests.
+- `tools/`: analysis and packaging; `dist-src/`: legacy FamSwap release templates; `docs/`: user/developer guides.
+- Ignored `local/`, `scratch/`, `dist/`: research, test data, generated packages. Existing `FModel/` is ignored in place.
 
 ## Build, Test, and Development Commands
 
-Use PowerShell and Python 3.8+:
+The manager requires Python 3.10+; legacy tools retain Python 3.8 support.
 
-- `py tools/build_famswap_package.py 1.0`: creates `dist/FamSwap-1.0/` and its ZIP, replacing existing outputs for that version. Edit sources, not generated copies.
-- `py tools/famswap_wizard.py`: starts the interactive image wizard; normally writes to the installed FamSwap folder.
-- `$env:FAMSWAP_MODDIR = "$PWD\scratch\FamSwap"`: redirects wizard output; provide a valid test folder containing `Scripts/main.lua` and verify the printed destination.
-- `powershell -ExecutionPolicy Bypass -File dist/FamSwap-1.0/install.ps1 -GameDir "C:\test\GameCopy" -NoDownload -SkipRunningCheck`: tests the packaged installer against a prepared game-folder copy.
-
-Deploy edited mods into `PUKEY_GODDESS_SHOT_TRICK/Binaries/Win64/ue4ss/Mods/`; installed copies are separate. Restart after Lua edits. Launch through Steam, avoiding duplicate instances.
+- `python -m pip install -r manager/requirements-dev.txt`: install development dependencies in a virtual environment.
+- `python -m manager`: open the desktop manager.
+- `python -m manager --source . --game-dir <fake-game-root>`: offline development using local catalogue files.
+- `python -m unittest discover -s tests -v`: run tests; Windows-only cases skip elsewhere.
+- `python -m manager --smoke-test`: check offline application startup.
+- `python tools/build_manager.py`: build the current platform's standalone bundle.
+- `py tools/build_famswap_package.py 1.0`: rebuild the legacy FamSwap package.
 
 ## Coding Style & Naming Conventions
 
-Use four-space indentation. Follow existing Python `snake_case`, PowerShell `Verb-Noun`, and Lua `PascalCase` helper/configuration conventions. Preserve `Scripts/main.lua` entry points and `[ModName]` log prefixes. Keep distributed FamSwap text in English and Python compatible with 3.8. No formatter or linter is configured.
+Use four spaces, Python `snake_case`, PowerShell `Verb-Noun`, and existing Lua helper/configuration naming. Keep distributed text in English and preserve `[ModName]` log prefixes. No formatter is configured. Configuration belongs in optional `settings.lua`, not source rewrites.
 
 ## Testing Guidelines
 
-Run `py -m unittest discover -s tests -v` for Windows installer tests (`tests/test_*.py`, standard-library `unittest`). No coverage threshold is set. Manually check wizard previews, gameplay scenes, toggles, restoration, and FamSwap F8/F9. Inspect `Binaries/Win64/ue4ss/UE4SS.log`; report unverified scenarios.
+Use `tests/test_*.py`. Include path/archive rejection, rollback, activation, configuration, and personal-file preservation cases for installer changes. Tests use temporary fake games, never the installed game. Qt runs offscreen; Lupa executes Lua with stubbed engine APIs. These checks do not verify gameplay. Manually check affected scenes and logs before claiming runtime compatibility. No coverage threshold is set.
 
 ## Commit & Pull Request Guidelines
 
-No pre-import Git history is available. Use concise imperative subjects, such as `Fix FamSwap texture reload`. Include affected mods, reproduction steps, validation, relevant issues, and screenshots for visual changes.
+Use concise imperative subjects. Describe affected mods, reproduction, validation, relevant issues, and screenshots for UI changes. Windows/Linux CI builds must pass before publishing `manager-v*` releases.
 
 ## Runtime Safety
 
-Validate Unreal objects with `IsValid()` and schedule engine mutations on the game thread. Avoid unsafe TMap traversal and `ClientRestart` hooks. Keep `CheatManagerEnablerMod`, `ConsoleEnablerMod`, and `ConsoleCommandsMod` disabled. Preserve user images and saves.
-
-Do not commit extracted assets, dumps, executables, or personal media. Avoid `git clean -fdx`: it deletes ignored local research.
+Validate Unreal objects with `IsValid()`, use the game thread for mutations, and avoid unsafe TMap traversal or `ClientRestart` hooks. Disable the three incompatible console/cheat examples consistently. Preserve media, settings, bookmarks, saves, and unknown files. Never commit extracted assets or binaries, and avoid `git clean -fdx`, which deletes ignored research.
