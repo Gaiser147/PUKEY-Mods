@@ -38,3 +38,8 @@ __pycache__/
 .idea/
 Thumbs.db
 Desktop.ini
+
+# Desktop application build products
+/build/
+*.spec
+.impeccable/review/

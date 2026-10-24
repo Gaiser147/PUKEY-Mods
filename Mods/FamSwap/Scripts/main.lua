@@ -45,7 +45,51 @@ local Targets = {
     },
 }
 
-local Config = { TickMs = 200, ToggleKey = Key.F8, ReloadKey = Key.F9 }
+local Config = {
+    TickMs = 200, ToggleKey = Key.F8, ReloadKey = Key.F9,
+    GameMode = "always", HideFlipbooks = true,
+}
+
+-- The manager writes this optional table separately from the versioned mod files.
+-- Keep this loader local so manually copied mods work without manager components.
+do
+    local Rules = {
+        TickMs = { Kind = "number", Min = 50, Max = 5000 },
+        ToggleKey = { Kind = "key" },
+        ReloadKey = { Kind = "key" },
+        GameMode = { Kind = "enum", Values = { ["always"] = true, ["idle"] = true } },
+        HideFlipbooks = { Kind = "boolean" },
+    }
+    local AllowedKeys = {
+        HOME = true, END = true, PAGE_UP = true, PAGE_DOWN = true,
+        INSERT = true, DELETE = true, SPACE = true, ZERO = true,
+        ONE = true, TWO = true, THREE = true, FOUR = true, FIVE = true,
+        SIX = true, SEVEN = true, EIGHT = true, NINE = true,
+    }
+    for i = 1, 12 do AllowedKeys["F" .. i] = true end
+    for i = string.byte("A"), string.byte("Z") do AllowedKeys[string.char(i)] = true end
+    local Ok, Settings = pcall(dofile, "ue4ss/Mods/FamSwap/settings.lua")
+    if Ok and type(Settings) == "table" then
+        for Name, Rule in pairs(Rules) do
+            local Value = Settings[Name]
+            if Rule.Kind == "key" then
+                if type(Value) == "string" and AllowedKeys[Value] and Key[Value] ~= nil then
+                    Config[Name] = Key[Value]
+                end
+            elseif Rule.Kind == "number" then
+                if type(Value) == "number" and Value == Value and Value >= Rule.Min and Value <= Rule.Max then
+                    Config[Name] = Value
+                end
+            elseif Rule.Kind == "boolean" then
+                if type(Value) == "boolean" then Config[Name] = Value end
+            elseif Rule.Kind == "enum" then
+                if type(Value) == "string" and Rule.Values[Value] then Config[Name] = Value end
+            end
+        end
+    end
+end
+Targets[2].Mode = Config.GameMode
+Targets[2].HideFlipbooks = Config.HideFlipbooks
 local Enabled = true
 
 local function Log(msg) print("[FamSwap] " .. tostring(msg) .. "\n") end

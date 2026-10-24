@@ -2,6 +2,8 @@
 
 ## Work on the source copy
 
+The central desktop application is documented in [mod-manager.md](mod-manager.md), and new catalogue entries in [mod-catalogue.md](mod-catalogue.md). It requires Python 3.10+ and `manager/requirements-dev.txt`; legacy tools retain Python 3.8 support. Install those development dependencies to run the backend, media, Qt and Lua-configuration suites alongside the original Windows installer tests.
+
 Edit playable mods in `Mods/<Name>/Scripts/main.lua` and probes in `diagnostics/<Name>/Scripts/main.lua`. Installed game copies are separate. With the game closed, copy the changed mod into `Win64/ue4ss/Mods/`, preserve personal media/bookmarks, then restart through Steam.
 
 Use four spaces and follow each language's existing naming style. Keep Python 3.8 compatibility, English user-facing FamSwap text, and `[ModName]` log prefixes. There is no configured formatter or automated in-game test suite. Avoid changing Lua runtime behavior as part of repository housekeeping.

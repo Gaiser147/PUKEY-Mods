@@ -2,6 +2,8 @@
 
 These instructions apply to the Windows Steam demo. Each playable mod can be installed separately. Start with one mod so that its behavior is easy to check.
 
+For guided installation, updates, activation and configuration, use the [desktop Mod Manager](mod-manager.md). The steps below remain available for manual installation. The manager also runs on Linux to manage a Proton installation; gameplay compatibility there has not been verified.
+
 ## 1. Locate the game
 
 In Steam, right-click the demo → **Manage → Browse local files**. This opens the game root. From there open:

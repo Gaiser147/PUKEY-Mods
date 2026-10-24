@@ -1,0 +1,292 @@
+{
+    "schema_version": 1,
+    "mods": [
+        {
+            "id": "FreeCam",
+            "name": "FreeCam",
+            "version": "1.1.0",
+            "description": "Explore scenes with a free camera, teleport the player, and save camera positions per map.",
+            "controls": "F5: camera on/off; F6: mode; W/A/S/D: move; mouse: look; E/Space: up; Q/Ctrl: down; Shift: boost. Page Up/Down: speed; Home: reset speed; T: teleport player. Ctrl+1-5: save positions; 1-5: recall. Keys below can be changed.",
+            "files": [
+                "Scripts/main.lua",
+                "README.md"
+            ],
+            "settings": [
+                {
+                    "key": "Mode",
+                    "label": "Camera mode",
+                    "type": "enum",
+                    "default": "possess",
+                    "options": [
+                        "possess",
+                        "viewtarget"
+                    ]
+                },
+                {
+                    "key": "DefaultSpeed",
+                    "label": "Movement speed (cm/s)",
+                    "type": "number",
+                    "default": 400,
+                    "min": 10,
+                    "max": 20000,
+                    "step": 50
+                },
+                {
+                    "key": "BoostFactor",
+                    "label": "Speed boost multiplier",
+                    "type": "number",
+                    "default": 4,
+                    "min": 1,
+                    "max": 20,
+                    "step": 0.5
+                },
+                {
+                    "key": "MouseSens",
+                    "label": "Viewtarget mouse sensitivity",
+                    "type": "number",
+                    "default": 0.15,
+                    "min": 0.01,
+                    "max": 5,
+                    "step": 0.01
+                },
+                {
+                    "key": "TickMs",
+                    "label": "Camera interval (ms)",
+                    "type": "number",
+                    "default": 8,
+                    "min": 1,
+                    "max": 1000,
+                    "step": 1
+                },
+                {
+                    "key": "ToggleKey",
+                    "label": "Toggle camera",
+                    "type": "key",
+                    "default": "F5"
+                },
+                {
+                    "key": "ModeKey",
+                    "label": "Switch mode",
+                    "type": "key",
+                    "default": "F6"
+                },
+                {
+                    "key": "SpeedUpKey",
+                    "label": "Increase speed",
+                    "type": "key",
+                    "default": "PAGE_UP"
+                },
+                {
+                    "key": "SpeedDownKey",
+                    "label": "Decrease speed",
+                    "type": "key",
+                    "default": "PAGE_DOWN"
+                },
+                {
+                    "key": "SpeedResetKey",
+                    "label": "Reset speed",
+                    "type": "key",
+                    "default": "HOME"
+                },
+                {
+                    "key": "TeleportKey",
+                    "label": "Teleport player",
+                    "type": "key",
+                    "default": "T"
+                }
+            ]
+        },
+        {
+            "id": "LightTools",
+            "name": "LightTools",
+            "version": "1.1.0",
+            "description": "Adjust scene lighting, camera light, fog, post-processing, shadows, and exposure.",
+            "controls": "F1: floodlight; F2: camera light; F3: fog; F4: post-processing; F7: shadows. +/-: exposure; Ctrl +/-: light intensity; Num0/End: reset. Keys below can be changed.",
+            "files": [
+                "Scripts/main.lua",
+                "README.md"
+            ],
+            "settings": [
+                {
+                    "key": "FloodIntensity",
+                    "label": "Floodlight intensity (lux)",
+                    "type": "number",
+                    "default": 6,
+                    "min": 0.01,
+                    "max": 1000,
+                    "step": 1
+                },
+                {
+                    "key": "HeadlightIntensity",
+                    "label": "Camera light intensity (cd)",
+                    "type": "number",
+                    "default": 2000,
+                    "min": 1,
+                    "max": 100000,
+                    "step": 100
+                },
+                {
+                    "key": "HeadlightRadius",
+                    "label": "Camera light radius (cm)",
+                    "type": "number",
+                    "default": 4000,
+                    "min": 100,
+                    "max": 100000,
+                    "step": 100
+                },
+                {
+                    "key": "ExposureStep",
+                    "label": "Exposure step",
+                    "type": "number",
+                    "default": 1,
+                    "min": 0.1,
+                    "max": 5,
+                    "step": 0.1
+                },
+                {
+                    "key": "TickMs",
+                    "label": "Light update interval (ms)",
+                    "type": "number",
+                    "default": 16,
+                    "min": 1,
+                    "max": 1000,
+                    "step": 1
+                },
+                {
+                    "key": "FloodKey",
+                    "label": "Toggle floodlight",
+                    "type": "key",
+                    "default": "F1"
+                },
+                {
+                    "key": "HeadlightKey",
+                    "label": "Toggle camera light",
+                    "type": "key",
+                    "default": "F2"
+                },
+                {
+                    "key": "FogKey",
+                    "label": "Toggle fog",
+                    "type": "key",
+                    "default": "F3"
+                },
+                {
+                    "key": "PostProcessKey",
+                    "label": "Toggle post-processing",
+                    "type": "key",
+                    "default": "F4"
+                },
+                {
+                    "key": "ShadowKey",
+                    "label": "Toggle shadows",
+                    "type": "key",
+                    "default": "F7"
+                }
+            ]
+        },
+        {
+            "id": "FamSwap",
+            "name": "FamSwap",
+            "version": "1.1.0",
+            "description": "Replace Fam behind the bar and at the table with your own images. Missing images keep the original.",
+            "controls": "F8: replacement on/off; F9: reload images. Table mode always replaces videos; idle only replaces Fam while no Fam video is playing. Keys below can be changed.",
+            "files": [
+                "Scripts/main.lua",
+                "README.md",
+                "README.txt",
+                "examples/example_bar.png",
+                "examples/example_game.png"
+            ],
+            "settings": [
+                {
+                    "key": "GameMode",
+                    "label": "Table image mode",
+                    "type": "enum",
+                    "default": "always",
+                    "options": [
+                        "always",
+                        "idle"
+                    ]
+                },
+                {
+                    "key": "HideFlipbooks",
+                    "label": "Hide Fam animation layers while active",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "TickMs",
+                    "label": "Image update interval (ms)",
+                    "type": "number",
+                    "default": 200,
+                    "min": 50,
+                    "max": 5000,
+                    "step": 50
+                },
+                {
+                    "key": "ToggleKey",
+                    "label": "Toggle replacement",
+                    "type": "key",
+                    "default": "F8"
+                },
+                {
+                    "key": "ReloadKey",
+                    "label": "Reload images",
+                    "type": "key",
+                    "default": "F9"
+                }
+            ],
+            "images": [
+                {
+                    "file": "bar.png",
+                    "label": "Bar image",
+                    "width": 1110,
+                    "height": 2156,
+                    "background": "transparent",
+                    "scale": 100,
+                    "top": 0
+                },
+                {
+                    "file": "game.png",
+                    "label": "Table image",
+                    "width": 2560,
+                    "height": 1440,
+                    "background": "green",
+                    "scale": 100,
+                    "top": 0
+                }
+            ]
+        },
+        {
+            "id": "MovieSwap",
+            "name": "MovieSwap",
+            "version": "1.1.0",
+            "description": "Replace known game videos with your own MP4 files while keeping the original when a replacement is missing.",
+            "controls": "F11: rescan replacement videos. Video imports copy the selected file into the matching game-relative path. Fam videos need a pure green background; preserve the original dimensions, codec, frame rate, and duration when possible. Keys below can be changed.",
+            "files": [
+                "Scripts/main.lua",
+                "README.md",
+                "VIDEOS.txt"
+            ],
+            "settings": [
+                {
+                    "key": "ScanIntervalMs",
+                    "label": "Video scan interval (ms)",
+                    "type": "number",
+                    "default": 2000,
+                    "min": 100,
+                    "max": 60000,
+                    "step": 100
+                },
+                {
+                    "key": "ReloadKey",
+                    "label": "Rescan videos",
+                    "type": "key",
+                    "default": "F11"
+                }
+            ],
+            "video_list": "VIDEOS.txt",
+            "video_folder": "Movies"
+        }
+    ]
+}
