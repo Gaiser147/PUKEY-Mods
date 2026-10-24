@@ -45,7 +45,7 @@ Optional `images` entries describe user-produced PNGs, separate from program pay
 [{"file":"portrait.png","label":"Portrait","width":1110,"height":2156,"background":"transparent","scale":100,"top":0}]
 ```
 
-Use `transparent`, `green`, or `black` backgrounds. Keep image dimensions within 8192 per side and 16 million pixels to match the composer. The GUI supplies percentage scale/offset and optional green removal; applying writes a PNG with a backup of any prior file.
+Use `transparent` or `green` backgrounds. Keep image dimensions within 8192 per side and 16 million pixels to match the composer, scale between 1 and 500 percent, and the initial top offset between -100 and 100 percent. The GUI supplies percentage scale/offset and optional green removal; applying writes a PNG with a backup of any prior file.
 
 ## Video targets
 

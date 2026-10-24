@@ -61,6 +61,8 @@ python tools/build_manager.py
 
 For an offline development session use `python -m manager --source . --game-dir <fake-game-root>`. Never use a real game folder for mutation tests. GitHub Actions tests/builds Windows and Linux separately, then tags named `manager-v*` publish a prerelease only after both build jobs pass.
 
+Standalone packaging is standardized on **Python 3.12**, matching the tested CI environment. Source launch supports Python 3.10+, but the build script rejects other Python versions; a local Python 3.14 frozen Qt build failed startup while the Python 3.12 artifact passed on the same machine.
+
 ## Adding a mod
 
 See [the catalogue guide](mod-catalogue.md). Catalogue files are declarative; the manager never executes a downloaded installer script. Downloaded Lua code runs later inside the game when that mod is enabled.

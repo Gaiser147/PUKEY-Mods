@@ -1,7 +1,7 @@
 name: Mod Manager
 on:
   push:
-    branches: [main, feature/mod-manager]
+    branches: [main]
     tags: ['manager-v*']
   pull_request:
   workflow_dispatch:
@@ -16,6 +16,7 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     env:
       QT_QPA_PLATFORM: offscreen
     steps:
@@ -37,11 +38,13 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $process = Start-Process -FilePath 'dist/manager/PUKEY-Mod-Manager/PUKEY-Mod-Manager.exe' -ArgumentList '--smoke-test' -Wait -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath 'dist/manager/PUKEY-Mod-Manager/PUKEY-Mod-Manager.exe' -ArgumentList '--smoke-test' -PassThru -WindowStyle Hidden
+          if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'Packaged startup timed out' }
+          $process.Refresh()
           if ($process.ExitCode -ne 0) { throw "Packaged startup failed: $($process.ExitCode)" }
       - name: Packaged startup (Linux)
         if: runner.os == 'Linux'
-        run: dist/manager/PUKEY-Mod-Manager/PUKEY-Mod-Manager --smoke-test
+        run: timeout 30s dist/manager/PUKEY-Mod-Manager/PUKEY-Mod-Manager --smoke-test
       - uses: actions/upload-artifact@v4
         with:
           name: manager-${{ runner.os }}

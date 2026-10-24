@@ -8,6 +8,10 @@ import sys
 
 
 def main():
+    if sys.version_info[:2] != (3, 12):
+        raise SystemExit('Build standalone bundles with Python 3.12, matching the tested CI environment. Source launch supports Python 3.10+.')
+    if sys.platform not in ('win32', 'linux') or platform.machine().lower() not in ('amd64', 'x86_64'):
+        raise SystemExit('Build on Windows or Linux x86-64; builds are platform-specific.')
     root = Path(__file__).resolve().parents[1]
     name = 'PUKEY-Mod-Manager'
     subprocess.run([
@@ -21,6 +25,10 @@ def main():
     output = root / 'dist/manager' / name
     shutil.copy2(root / 'docs/mod-manager.md', output / 'README.md')
     shutil.copy2(root / 'manager/THIRD-PARTY.md', output / 'THIRD-PARTY.md')
+    python_license = Path(sys.base_prefix) / 'LICENSE.txt'
+    if python_license.is_file():
+        (output / 'licenses/Python').mkdir(parents=True, exist_ok=True)
+        shutil.copy2(python_license, output / 'licenses/Python/LICENSE.txt')
     for package in ['PySide6-Essentials', 'shiboken6', 'Pillow', 'psutil']:
         distribution = importlib.metadata.distribution(package)
         for file in distribution.files or []:

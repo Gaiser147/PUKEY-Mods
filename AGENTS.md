@@ -14,7 +14,7 @@ UE4SS Lua mods for the Windows Steam demo of **PUKEY GODDESS SHOT TRICK** (AppID
 
 ## Build, Test, and Development Commands
 
-The manager requires Python 3.10+; legacy tools retain Python 3.8 support.
+Manager source requires Python 3.10+, standalone builds Python 3.12; legacy tools retain Python 3.8 support.
 
 - `python -m pip install -r manager/requirements-dev.txt`: install development dependencies in a virtual environment.
 - `python -m manager`: open the desktop manager.

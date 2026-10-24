@@ -149,17 +149,21 @@ def _catalogue(data):
             if PurePosixPath(image["file"]).suffix.lower() != ".png": raise ValueError("Image targets must be PNG files")
             if image["file"].casefold() in seen: raise ValueError("Image conflicts with shipped payload")
             seen.add(image["file"].casefold())
-            if not isinstance(image.get("label"), str) or image.get("background") not in ("transparent", "green", "black"):
+            if not isinstance(image.get("label"), str) or image.get("background") not in ("transparent", "green"):
                 raise ValueError("Invalid image specification")
             for field in ("width", "height"):
-                if type(image.get(field)) is not int or not 1 <= image[field] <= 16384: raise ValueError("Invalid image size")
+                if type(image.get(field)) is not int or not 1 <= image[field] <= 8192: raise ValueError("Invalid image size")
+            if image['width'] * image['height'] > 16_000_000: raise ValueError('Image exceeds 16 million pixels')
             for field, default in (("scale", 100), ("top", 0)):
                 value = image.get(field, default)
                 if type(value) not in (int, float) or not math.isfinite(value): raise ValueError("Invalid image layout")
+                low, high = (1, 500) if field == 'scale' else (-100, 100)
+                if not low <= value <= high: raise ValueError('Image layout exceeds desktop tool limits')
         for field in ("video_list", "video_folder"):
             if field in mod: safe_path(mod[field])
         if ("video_list" in mod) != ("video_folder" in mod): raise ValueError("Incomplete video specification")
         if "video_folder" in mod:
+            if mod['video_list'] not in files: raise ValueError('Video list must be a declared payload file')
             if mod["video_folder"].casefold() in {"scripts", "settings.lua", "settings.json", "enabled.txt"}:
                 raise ValueError("Video folder conflicts with mod code")
     return mods

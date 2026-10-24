@@ -82,6 +82,7 @@ class Window(QMainWindow):
         self._build()
         self.setStyleSheet(STYLE)
         if self.snapshot:
+            self.source_label.setText('Local catalogue')
             self.populate()
         else:
             self.render_details()
@@ -650,6 +651,7 @@ class Window(QMainWindow):
         if hasattr(self, 'preview_label'):
             self.preview_label.setPixmap(QPixmap())
             self.preview_label.setText('Preview the image before applying it.')
+        self.update_controls()
 
     def choose_image(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Choose replacement image', '',

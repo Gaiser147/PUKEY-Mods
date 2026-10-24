@@ -68,6 +68,22 @@ class ManagerUiTests(unittest.TestCase):
         self.assertEqual(field.minimum(), 0.01)
         self.assertEqual(field.value(), 0.25)
 
+    def test_invalidated_preview_disables_footer_action(self):
+        mod = {'id': 'Example', 'name': 'Example', 'description': '', 'controls': '', 'settings': [],
+               'images': [{'file': 'bar.png', 'label': 'Bar', 'width': 10, 'height': 10,
+                           'background': 'transparent'}]}
+        window = self.make_window(SimpleNamespace(mods=[mod], files={}, revision='test'))
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True},
+            settings=lambda mod: {})
+        window.render_details()
+        window.tabs.setCurrentIndex(1)
+        window._image_bytes = b'preview'
+        window.update_controls()
+        self.assertTrue(window.apply_footer_button.isEnabled())
+        window.invalidate_preview()
+        self.assertFalse(window.apply_footer_button.isEnabled())
+
     def test_background_action_preserves_unsaved_settings(self):
         mod = {'id': 'Example', 'name': 'Example', 'description': '', 'controls': '',
                'settings': [{'key': 'Speed', 'label': 'Speed', 'type': 'number',

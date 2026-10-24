@@ -20,7 +20,7 @@ from manager.service import Manager
 
 def definition():
     return {"id": "Demo", "name": "Demo", "version": "1.0", "description": "Example",
-            "controls": "F5", "files": ["Scripts/main.lua", "README.md"],
+            "controls": "F5", "files": ["Scripts/main.lua", "README.md", "VIDEOS.txt"],
             "settings": [{"key": "Mode", "label": "Mode", "type": "enum", "default": "a", "options": ["a", "b"]},
                          {"key": "Speed", "label": "Speed", "type": "number", "default": 2, "min": 1, "max": 10},
                          {"key": "ToggleKey", "label": "Key", "type": "key", "default": "F5"},
@@ -32,7 +32,8 @@ def definition():
 def snapshot(mod=None, code=b"first", revision="a" * 40):
     mod = mod or definition()
     return Snapshot(revision, {"catalog.json": json.dumps({"schema_version": 1, "mods": [mod]}).encode(),
-                               "Mods/Demo/Scripts/main.lua": code, "Mods/Demo/README.md": b"Read me"})
+                               "Mods/Demo/Scripts/main.lua": code, "Mods/Demo/README.md": b"Read me",
+                               "Mods/Demo/VIDEOS.txt": b"Bacchus/Movie/Fam/test.mp4\n"})
 
 
 def archive(entries):
@@ -50,6 +51,19 @@ def archive(entries):
 class CatalogTests(unittest.TestCase):
     def test_snapshot_has_validated_mods(self):
         self.assertEqual(snapshot().mods[0]["id"], "Demo")
+
+    def test_media_specs_must_be_usable_by_the_desktop_tools(self):
+        edits = [lambda m: m['images'][0].update(background='black'),
+                 lambda m: m['images'][0].update(width=9000),
+                 lambda m: m['images'][0].update(width=8192, height=8192),
+                 lambda m: m['images'][0].update(scale=0),
+                 lambda m: m['images'][0].update(top=300),
+                 lambda m: m.update(video_list='NotListed.txt')]
+        for edit in edits:
+            mod = definition()
+            edit(mod)
+            with self.subTest(mod=mod), self.assertRaises(ValueError):
+                snapshot(mod)
 
     def test_rejects_unsafe_catalogue(self):
         for key, value in [("id", "../Demo"), ("files", ["../main.lua"]),
@@ -219,6 +233,14 @@ class ManagerTests(unittest.TestCase):
                 (self.manager.mods_dir / "mods.txt").write_text("Demo : %d\n" % text_enabled)
                 (self.manager.mods_dir / "mods.json").write_text(json.dumps([{"mod_name": "Demo", "mod_enabled": json_enabled}]))
                 self.assertEqual(self.manager.status(self.mod)["enabled"], text_enabled)
+
+    def test_any_enabled_duplicate_txt_entry_activates_without_marker(self):
+        (self.folder / "Scripts").mkdir(parents=True)
+        (self.folder / "Scripts/main.lua").write_bytes(b"manual")
+        for entries in ["Demo : 0\nDemo : 1\n", "Demo : 1\nDemo : 0\n"]:
+            with self.subTest(entries=entries):
+                (self.manager.mods_dir / "mods.txt").write_text(entries)
+                self.assertTrue(self.manager.status(self.mod)["enabled"])
 
     def test_manual_marker_activation_overrides_disabled_configuration_on_adoption(self):
         (self.folder / "Scripts").mkdir(parents=True)

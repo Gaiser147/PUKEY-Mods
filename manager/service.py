@@ -187,7 +187,7 @@ class Manager:
             active_sources.extend(value == "1" for value in matches)
         # The tested UE4SS build does not use mods.json for activation. Explicit
         # manager mutations still keep that compatibility file consistent.
-        enabled = installed and (has_marker or (bool(active_sources) and all(active_sources)))
+        enabled = installed and (has_marker or any(active_sources))
         update = False
         if installed:
             update = entry is None or entry.get("version") != mod["version"]
