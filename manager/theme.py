@@ -92,6 +92,10 @@ QScrollBar:horizontal { background: #211b24; height: 8px; margin: 0; }
 QScrollBar::handle:horizontal { background: #766a78; min-width: 30px; border-radius: 3px; }
 QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
 QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
+QToolButton { background: transparent; color: #f0ece8; border: 1px solid transparent; border-radius: 2px; }
+QToolButton:hover { background: #302630; border-color: #766a78; }
+QToolButton:focus { border-color: #02e5a2; }
+QToolButton:disabled { background: transparent; }
 QToolTip { color: #f0ece8; background: #302630; border: 1px solid #766a78; }
 '''.replace('@assets@', ASSETS.as_posix())
 

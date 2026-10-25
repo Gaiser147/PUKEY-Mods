@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "ExampleLua",
+  "name": "Example Lua",
+  "version": "0.1.0",
+  "description": "Synthetic authoring example: prints a configured greeting to the UE4SS console.",
+  "controls": "No game controls; restart after saving settings.",
+  "author": "Your name",
+  "requires": ["A working UE4SS installation for your game"],
+  "files": ["Scripts/main.lua", "README.md"],
+  "entrypoints": [{"type": "lua", "path": "Scripts/main.lua"}],
+  "default_files": ["settings.lua"],
+  "settings": [
+    {"key": "Greeting", "label": "Greeting", "type": "string", "default": "Hello from ExampleLua", "description": "One line printed when UE4SS loads this example."},
+    {"key": "Visible", "label": "Print greeting", "type": "boolean", "default": true, "description": "Turn the demonstration console message on or off."}
+  ],
+  "configuration": [
+    {"file": "settings.lua", "format": "lua", "bindings": {"Greeting": {"key": "Greeting"}, "Visible": {"key": "Visible"}}}
+  ]
+}

@@ -20,7 +20,12 @@
                     "options": [
                         "possess",
                         "viewtarget"
-                    ]
+                    ],
+                    "description": "Choose how FreeCam takes control of the camera. Switch modes while FreeCam is off.",
+                    "option_descriptions": {
+                        "possess": "Spawn and possess a collision-free spectator pawn using engine movement. This is the default mode.",
+                        "viewtarget": "Keep the player pawn and move a separate camera. Try this fallback if possess interferes with a scene."
+                    }
                 },
                 {
                     "key": "DefaultSpeed",
@@ -29,7 +34,8 @@
                     "default": 400,
                     "min": 10,
                     "max": 20000,
-                    "step": 50
+                    "step": 50,
+                    "description": "Base camera movement speed in Unreal centimetres per second. Larger values move farther each second."
                 },
                 {
                     "key": "BoostFactor",
@@ -38,7 +44,8 @@
                     "default": 4,
                     "min": 1,
                     "max": 20,
-                    "step": 0.5
+                    "step": 0.5,
+                    "description": "Multiplies movement speed while Shift is held. A value of 4 makes boosted movement four times faster."
                 },
                 {
                     "key": "MouseSens",
@@ -47,7 +54,8 @@
                     "default": 0.15,
                     "min": 0.01,
                     "max": 5,
-                    "step": 0.01
+                    "step": 0.01,
+                    "description": "Mouse-look sensitivity in viewtarget mode. This preference does not change possess mode mouse input."
                 },
                 {
                     "key": "TickMs",
@@ -56,43 +64,50 @@
                     "default": 8,
                     "min": 1,
                     "max": 1000,
-                    "step": 1
+                    "step": 1,
+                    "description": "Delay between camera updates in milliseconds. Smaller values update more frequently and can use more CPU."
                 },
                 {
                     "key": "ToggleKey",
                     "label": "Toggle camera",
                     "type": "key",
-                    "default": "F5"
+                    "default": "F5",
+                    "description": "Turn the free camera on or off. Turn it off before changing scenes."
                 },
                 {
                     "key": "ModeKey",
                     "label": "Switch mode",
                     "type": "key",
-                    "default": "F6"
+                    "default": "F6",
+                    "description": "Switch between possess and viewtarget while the free camera is off. The shortcut changes the mode for this game session."
                 },
                 {
                     "key": "SpeedUpKey",
                     "label": "Increase speed",
                     "type": "key",
-                    "default": "PAGE_UP"
+                    "default": "PAGE_UP",
+                    "description": "Increase the current camera movement speed during this game session."
                 },
                 {
                     "key": "SpeedDownKey",
                     "label": "Decrease speed",
                     "type": "key",
-                    "default": "PAGE_DOWN"
+                    "default": "PAGE_DOWN",
+                    "description": "Decrease the current camera movement speed during this game session."
                 },
                 {
                     "key": "SpeedResetKey",
                     "label": "Reset speed",
                     "type": "key",
-                    "default": "HOME"
+                    "default": "HOME",
+                    "description": "Restore the current movement speed to the configured base speed."
                 },
                 {
                     "key": "TeleportKey",
                     "label": "Teleport player",
                     "type": "key",
-                    "default": "T"
+                    "default": "T",
+                    "description": "Move the player to the free camera position in search mode. Use care near geometry and scene boundaries."
                 }
             ]
         },
@@ -114,7 +129,8 @@
                     "default": 6,
                     "min": 0.01,
                     "max": 1000,
-                    "step": 1
+                    "step": 1,
+                    "description": "Brightness of the additional scene floodlight in lux. Existing scene lighting can make the result vary."
                 },
                 {
                     "key": "HeadlightIntensity",
@@ -123,7 +139,8 @@
                     "default": 2000,
                     "min": 1,
                     "max": 100000,
-                    "step": 100
+                    "step": 100,
+                    "description": "Brightness of the light attached to the camera, in candela."
                 },
                 {
                     "key": "HeadlightRadius",
@@ -132,7 +149,8 @@
                     "default": 4000,
                     "min": 100,
                     "max": 100000,
-                    "step": 100
+                    "step": 100,
+                    "description": "Maximum reach of the camera light in Unreal centimetres."
                 },
                 {
                     "key": "ExposureStep",
@@ -141,7 +159,8 @@
                     "default": 1,
                     "min": 0.1,
                     "max": 5,
-                    "step": 0.1
+                    "step": 0.1,
+                    "description": "Amount added or removed by each brightness shortcut. The mod uses colour grading for this adjustment."
                 },
                 {
                     "key": "TickMs",
@@ -150,37 +169,43 @@
                     "default": 16,
                     "min": 1,
                     "max": 1000,
-                    "step": 1
+                    "step": 1,
+                    "description": "Delay between lighting updates in milliseconds. Smaller values update more frequently and can use more CPU."
                 },
                 {
                     "key": "FloodKey",
                     "label": "Toggle floodlight",
                     "type": "key",
-                    "default": "F1"
+                    "default": "F1",
+                    "description": "Toggle the additional floodlight."
                 },
                 {
                     "key": "HeadlightKey",
                     "label": "Toggle camera light",
                     "type": "key",
-                    "default": "F2"
+                    "default": "F2",
+                    "description": "Toggle the light that follows the camera."
                 },
                 {
                     "key": "FogKey",
                     "label": "Toggle fog",
                     "type": "key",
-                    "default": "F3"
+                    "default": "F3",
+                    "description": "Toggle the mod fog override."
                 },
                 {
                     "key": "PostProcessKey",
                     "label": "Toggle post-processing",
                     "type": "key",
-                    "default": "F4"
+                    "default": "F4",
+                    "description": "Toggle the post-processing override. Exposure and colour effects depend on the scene."
                 },
                 {
                     "key": "ShadowKey",
                     "label": "Toggle shadows",
                     "type": "key",
-                    "default": "F7"
+                    "default": "F7",
+                    "description": "Toggle the mod shadow override."
                 }
             ]
         },
@@ -206,13 +231,19 @@
                     "options": [
                         "always",
                         "idle"
-                    ]
+                    ],
+                    "description": "Choose when the table replacement image is shown. Bar image replacement is separate.",
+                    "option_descriptions": {
+                        "always": "Show the table replacement continuously.",
+                        "idle": "Show the table replacement while idle so game video scenes can remain visible."
+                    }
                 },
                 {
                     "key": "HideFlipbooks",
                     "label": "Hide Fam animation layers while active",
                     "type": "boolean",
-                    "default": true
+                    "default": true,
+                    "description": "Hide the related flipbook elements while applying the image replacement."
                 },
                 {
                     "key": "TickMs",
@@ -221,19 +252,22 @@
                     "default": 200,
                     "min": 50,
                     "max": 5000,
-                    "step": 50
+                    "step": 50,
+                    "description": "Delay between replacement checks in milliseconds. Smaller values react sooner and can use more CPU."
                 },
                 {
                     "key": "ToggleKey",
                     "label": "Toggle replacement",
                     "type": "key",
-                    "default": "F8"
+                    "default": "F8",
+                    "description": "Toggle FamSwap replacements for this game session."
                 },
                 {
                     "key": "ReloadKey",
                     "label": "Reload images",
                     "type": "key",
-                    "default": "F9"
+                    "default": "F9",
+                    "description": "Rescan replacement image files after changing them."
                 }
             ],
             "images": [
@@ -276,13 +310,15 @@
                     "default": 2000,
                     "min": 100,
                     "max": 60000,
-                    "step": 100
+                    "step": 100,
+                    "description": "Delay between scans for replacement video files in milliseconds."
                 },
                 {
                     "key": "ReloadKey",
                     "label": "Rescan videos",
                     "type": "key",
-                    "default": "F11"
+                    "default": "F11",
+                    "description": "Rescan replacement video files immediately. Restart the game after removing replacements."
                 }
             ],
             "video_list": "VIDEOS.txt",

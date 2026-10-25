@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "ExampleNative",
+  "name": "Example Native",
+  "version": "0.1.0",
+  "description": "Synthetic source template; build against the matching UE4SS SDK before packaging.",
+  "controls": "No game controls.",
+  "author": "Your name",
+  "requires": ["Windows x64", "A working UE4SS installation", "Matching UE4SS C++ SDK, architecture and runtime ABI"],
+  "files": ["dlls/main.dll", "README.md"],
+  "entrypoints": [{"type": "native", "path": "dlls/main.dll"}],
+  "default_files": [],
+  "settings": []
+}
