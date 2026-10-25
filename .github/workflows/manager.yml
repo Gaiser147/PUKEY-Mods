@@ -32,6 +32,10 @@ jobs:
       - run: python -m pip install -r manager/requirements-dev.txt
       - run: python -m unittest discover -s tests -v
       - run: python -m manager --smoke-test
+      - name: Capture native desktop layouts
+        run: |
+          python -m manager --source . --screenshot dist/ui-qa/desktop.png --size 1120x800
+          python -m manager --source . --screenshot dist/ui-qa/small-desktop.png --size 1024x768
       - run: python tools/build_famswap_package.py 1.0
       - run: python tools/build_manager.py
       - name: Packaged startup (Windows)
@@ -45,6 +49,11 @@ jobs:
       - name: Packaged startup (Linux)
         if: runner.os == 'Linux'
         run: timeout 30s dist/manager/PUKEY-Mod-Manager/PUKEY-Mod-Manager --smoke-test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-qa-${{ runner.os }}
+          path: dist/ui-qa/*.png
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: manager-${{ runner.os }}
@@ -63,6 +72,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: manager-*
           merge-multiple: true
       - name: Publish verified bundles
         env:
