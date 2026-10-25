@@ -10,7 +10,7 @@ import re
 import stat
 import tempfile
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 from types import MappingProxyType
 import zipfile
 
@@ -59,6 +59,12 @@ def parse_json(data):
         raise ValueError("Malformed JSON: " + str(exc)) from exc
 
 
+def _finite_number(value):
+    if type(value) not in (int, float): return False
+    try: return math.isfinite(value)
+    except OverflowError: return False
+
+
 def validate_settings(mod, values):
     if not isinstance(values, dict): raise ValueError("Settings must be an object")
     specs = mod.get("settings", [])
@@ -70,8 +76,9 @@ def validate_settings(mod, values):
         valid = False
         if kind == "boolean": valid = type(value) is bool
         elif kind == "number":
-            valid = type(value) in (int, float) and math.isfinite(value) and spec["min"] <= value <= spec["max"]
+            valid = _finite_number(value) and spec["min"] <= value <= spec["max"]
         elif kind == "enum": valid = isinstance(value, str) and value in spec["options"]
+        elif kind == "string": valid = isinstance(value, str) and len(value) <= 4096 and not any(ord(c) < 32 or c in "\x7f\x85\u2028\u2029" for c in value)
         elif kind == "key": valid = isinstance(value, str) and value in KEYS
         if not valid: raise ValueError("Invalid value for setting " + key)
         result[key] = value
@@ -90,10 +97,15 @@ def lua_settings(values):
         if not isinstance(key, str): raise ValueError("Setting keys must be strings")
         if isinstance(value, str): rendered = _lua_string(value)
         elif type(value) is bool: rendered = "true" if value else "false"
-        elif type(value) in (int, float) and math.isfinite(value): rendered = repr(value)
+        elif _finite_number(value): rendered = repr(value)
         else: raise ValueError("Unsupported Lua setting value")
         lines.append("    [%s] = %s," % (_lua_string(key), rendered))
     return ("\n".join(lines) + "\n}\n").encode("utf-8")
+
+
+def _plain_text(value, label):
+    if not isinstance(value, str) or len(value) > 4096 or any(ord(c) < 32 and c not in "\n\t" for c in value) or re.search(r"<[^>]*>", value):
+        raise ValueError("Invalid plain text " + label)
 
 
 def _catalogue(data):
@@ -106,7 +118,7 @@ def _catalogue(data):
     ids = set()
     for mod in mods:
         if not isinstance(mod, dict): raise ValueError("Invalid mod entry")
-        if set(mod) - {"id", "name", "version", "description", "controls", "files", "settings", "images", "video_list", "video_folder"}:
+        if set(mod) - {"id", "name", "version", "description", "controls", "files", "settings", "images", "video_list", "video_folder", "entrypoints", "default_files", "configuration", "author", "homepage", "requires", "available"}:
             raise ValueError("Unsupported mod features. Update the manager.")
         name = mod.get("id")
         if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", name): raise ValueError("Unsafe mod ID")
@@ -115,32 +127,61 @@ def _catalogue(data):
         ids.add(name.casefold())
         for field in ("name", "version", "description", "controls"):
             if not isinstance(mod.get(field), str): raise ValueError("Missing text field " + field)
+        _plain_text(mod["description"], "mod description")
         files = mod.get("files")
-        if not isinstance(files, list) or "Scripts/main.lua" not in files: raise ValueError("Missing Scripts/main.lua")
+        if not isinstance(files, list) or not files: raise ValueError("Missing program files")
+        entrypoints = mod.get("entrypoints", [{"type": "lua", "path": "Scripts/main.lua"}])
+        if not isinstance(entrypoints, list) or not entrypoints: raise ValueError("Missing entrypoints")
+        entry_seen = set()
+        for entry in entrypoints:
+            if not isinstance(entry, dict) or set(entry) != {"type", "path"} or entry.get("type") not in ("lua", "native"):
+                raise ValueError("Invalid entrypoint")
+            safe_path(entry.get("path"))
+            if entry["path"] not in files or entry["path"].casefold() in entry_seen: raise ValueError("Missing or duplicate entrypoint payload")
+            if PurePosixPath(entry["path"]).suffix.casefold() != (".lua" if entry["type"] == "lua" else ".dll"): raise ValueError("Invalid entrypoint extension")
+            entry_seen.add(entry["path"].casefold())
+        defaults = mod.get("default_files", [])
+        if not isinstance(defaults, list): raise ValueError("Default files must be an array")
         seen = set()
         for path in files:
             safe_path(path)
             if path.casefold() in seen or PurePosixPath(path).name.casefold() in ("settings.lua", "settings.json", "enabled.txt"):
                 raise ValueError("Conflicting or user-owned payload: " + path)
             seen.add(path.casefold())
+        for path in defaults:
+            safe_path(path)
+            if path.casefold() in seen or PurePosixPath(path).name.casefold() == "enabled.txt": raise ValueError("Conflicting default file: " + path)
+            seen.add(path.casefold())
+        for field in ("author", "homepage"):
+            if field in mod and (not isinstance(mod[field], str) or len(mod[field]) > 4096): raise ValueError("Invalid " + field)
+        if "homepage" in mod and mod["homepage"] and urlparse(mod["homepage"]).scheme not in ("https", "http"): raise ValueError("Invalid homepage URL")
+        if "requires" in mod and (not isinstance(mod["requires"], list) or any(not isinstance(v, str) or len(v) > 4096 for v in mod["requires"])): raise ValueError("Invalid requirements")
         specs = mod.get("settings", [])
         if not isinstance(specs, list): raise ValueError("Settings must be an array")
         settings_keys = set()
         for spec in specs:
             if not isinstance(spec, dict) or not isinstance(spec.get("key"), str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", spec["key"]):
                 raise ValueError("Invalid setting key")
-            if spec["key"] in settings_keys or spec.get("type") not in ("boolean", "number", "enum", "key") or "default" not in spec:
+            if spec["key"] in settings_keys or spec.get("type") not in ("boolean", "number", "enum", "key", "string") or "default" not in spec:
                 raise ValueError("Invalid or duplicate setting")
             settings_keys.add(spec["key"])
             if not isinstance(spec.get("label"), str): raise ValueError("Missing setting label")
+            if "description" in spec: _plain_text(spec["description"], "setting description")
+            if "option_descriptions" in spec:
+                help_text = spec["option_descriptions"]
+                if spec["type"] != "enum" or not isinstance(help_text, dict) or set(help_text) - set(spec.get("options", [])): raise ValueError("Invalid option descriptions")
+                for value in help_text.values(): _plain_text(value, "option description")
             if spec["type"] == "number":
                 for field in ("min", "max"):
-                    if type(spec.get(field)) not in (int, float) or not math.isfinite(spec[field]): raise ValueError("Invalid number bounds")
+                    if not _finite_number(spec.get(field)): raise ValueError("Invalid number bounds")
                 if spec["min"] > spec["max"]: raise ValueError("Invalid number bounds")
-                if "step" in spec and (type(spec["step"]) not in (int, float) or not math.isfinite(spec["step"]) or spec["step"] <= 0): raise ValueError("Invalid step")
+                if "step" in spec and (not _finite_number(spec["step"]) or spec["step"] <= 0): raise ValueError("Invalid step")
             if spec["type"] == "enum" and (not isinstance(spec.get("options"), list) or not spec["options"] or any(not isinstance(v, str) for v in spec["options"]) or len(set(spec["options"])) != len(spec["options"])):
                 raise ValueError("Invalid enum options")
         validate_settings(mod, {})
+        if "configuration" in mod:
+            from .configuration import validate_configuration
+            validate_configuration(mod)
         images = mod.get("images", [])
         if not isinstance(images, list): raise ValueError("Images must be an array")
         for image in images:
@@ -156,7 +197,7 @@ def _catalogue(data):
             if image['width'] * image['height'] > 16_000_000: raise ValueError('Image exceeds 16 million pixels')
             for field, default in (("scale", 100), ("top", 0)):
                 value = image.get(field, default)
-                if type(value) not in (int, float) or not math.isfinite(value): raise ValueError("Invalid image layout")
+                if not _finite_number(value): raise ValueError("Invalid image layout")
                 low, high = (1, 500) if field == 'scale' else (-100, 100)
                 if not low <= value <= high: raise ValueError('Image layout exceeds desktop tool limits')
         for field in ("video_list", "video_folder"):
@@ -170,17 +211,19 @@ def _catalogue(data):
 
 
 class Snapshot:
-    def __init__(self, revision, files):
+    def __init__(self, revision, files, source_id="official"):
         if not isinstance(revision, str) or not revision or len(revision) > 128: raise ValueError("Invalid revision")
         for name, data in files.items():
             safe_path(name)
             if not isinstance(data, bytes) or len(data) > MAX_FILE: raise ValueError("Invalid or oversized payload")
         if "catalog.json" not in files: raise ValueError("Snapshot has no catalog.json")
         self._mods = _catalogue(files["catalog.json"])
-        required = ["catalog.json"] + ["Mods/%s/%s" % (mod["id"], path) for mod in self._mods for path in mod["files"]]
+        required = ["catalog.json"] + ["Mods/%s/%s" % (mod["id"], path) for mod in self._mods for path in mod["files"] + mod.get("default_files", [])]
         if any(name not in files for name in required): raise ValueError("Snapshot is missing declared payloads")
         self.files = MappingProxyType({name: files[name] for name in required})
         self.revision = revision
+        self.source_id = source_id
+        self.origin = {}
 
     @property
     def mods(self):
@@ -197,7 +240,7 @@ class Snapshot:
             return path.read_bytes()
         files = {"catalog.json": read("catalog.json")}
         for mod in _catalogue(files["catalog.json"]):
-            for relative in mod["files"]:
+            for relative in mod["files"] + mod.get("default_files", []):
                 name = "Mods/%s/%s" % (mod["id"], relative); files[name] = read(name)
         revision = "local-" + hashlib.sha256(b"".join(files.values())).hexdigest()[:16]
         return cls(revision, files)
@@ -246,9 +289,23 @@ def read_archive(data, strip_root=True):
     except (zipfile.BadZipFile, RuntimeError) as exc: raise ValueError("Invalid ZIP archive") from exc
 
 
+def _https_url(url):
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError("HTTPS download without embedded credentials required")
+
+
+class HTTPSRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _https_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def download(url, limit=MAX_DOWNLOAD):
-    if urlparse(url).scheme != "https": raise ValueError("HTTPS download required")
-    with urlopen(Request(url, headers={"User-Agent": "PUKEY-Mod-Manager", "Accept": "application/vnd.github+json"}), timeout=30) as response:
+    _https_url(url)
+    opener = build_opener(HTTPSRedirectHandler())
+    with opener.open(Request(url, headers={"User-Agent": "PUKEY-Mod-Manager", "Accept": "application/vnd.github+json"}), timeout=30) as response:
+        _https_url(response.geturl())
         data = response.read(limit + 1)
         if len(data) > limit: raise ValueError("Download exceeds size limit")
         return data

@@ -1,0 +1,10 @@
+# Add this directory from a compatible UE4SS C++ mod build defining target UE4SS.
+cmake_minimum_required(VERSION 3.22)
+project(ExampleNative LANGUAGES CXX)
+if(NOT TARGET UE4SS)
+    message(FATAL_ERROR "Add this template from the matching UE4SS SDK build; no SDK is bundled.")
+endif()
+add_library(ExampleNative SHARED src/main.cpp)
+target_link_libraries(ExampleNative PRIVATE UE4SS)
+target_compile_features(ExampleNative PRIVATE cxx_std_20)
+set_target_properties(ExampleNative PROPERTIES OUTPUT_NAME main)

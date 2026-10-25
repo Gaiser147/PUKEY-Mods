@@ -32,7 +32,7 @@
         "sheetGap": 18, "mainSheetMarginsLTRB": [22, 18, 22, 17], "mainSheetGap": 9,
         "keySheetWidth": 280, "keySheetMarginsLTRB": [18, 16, 18, 16], "keySheetGap": 8,
         "fieldRowMinimumHeight": 56, "fieldRowMarginsLTRB": [0, 8, 0, 8], "fieldRowGap": 12,
-        "fieldWidth": 180, "keyControlWidth": 116,
+        "fieldWidth": 180, "keyControlWidth": 116, "keyRowMinimumHeight": 84, "settingActionSize": [26, 28],
         "imageOptionsWidthRange": [270, 310], "imageColumnGap": 22, "imageAdjustmentWidth": 112,
         "footerMarginsLTRB": [8, 1, 8, 1], "footerGap": 10, "statusMinimumHeight": 24, "progressMaximumHeight": 3
       },
@@ -47,7 +47,7 @@
         "popupSelection": "{colors.mint}", "popupSelectedText": "{colors.workspace}"
       },
       "navigationTokens": {
-        "height": 68, "rowHeightHint": 53, "minimumCellWidth": 185, "distributedColumnsMaximum": 4,
+        "height": 68, "rowHeightHint": 57, "fixedCellWidth": 224, "wheel": "Horizontal scrolling without selection changes", "statusLine": "Enabled/Disabled/Not installed plus independent update state",
         "flow": "LeftToRight; no wrapping; horizontal scroll as needed; native keyboard selection",
         "cellInsetsLTRB": [4, 5, 9, 5], "labelInset": 19, "hoverRibbonOpacity": 0.22,
         "selectedTexture": "<verified-local-game-ui-cache>/ribbon.png", "focus": "1px inset dashed outline; dark when selected, mint otherwise"

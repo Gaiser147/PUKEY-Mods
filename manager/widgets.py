@@ -2,6 +2,7 @@
 from functools import lru_cache
 import math
 from pathlib import Path
+import sys
 
 from PySide6.QtCore import Qt, QSize, QRectF, QPoint, QPointF, QLineF
 from PySide6.QtGui import QColor, QIcon, QPixmap, QPainter, QPen, QPolygonF, QFont, QTextOption, QRegion
@@ -66,6 +67,19 @@ class ModNavigation(QListWidget):
         super().resizeEvent(event)
         self.updateGeometries()
         self.doItemsLayout()
+
+    def wheelEvent(self, event):
+        delta = event.pixelDelta()
+        amount = delta.x() or delta.y()
+        if not amount:
+            angle = event.angleDelta()
+            amount = (angle.x() or angle.y()) / 120 * 112
+        bar = self.horizontalScrollBar()
+        if bar.maximum() > 0:
+            bar.setValue(bar.value() - int(amount))
+            event.accept()
+        else:
+            event.ignore()
 
 
 class OrnamentHeading(QLabel):
@@ -140,6 +154,10 @@ def icon(kind, color='#f0ece8'):
         painter.drawPolyline(QPolygonF([QPointF(3, 10), QPointF(3, 4), QPointF(9, 4)]))
     elif kind == 'check':
         painter.drawPolyline(QPolygonF([QPointF(5, 12), QPointF(10, 17), QPointF(20, 6)]))
+    elif kind == 'info':
+        painter.drawEllipse(QRectF(3, 3, 18, 18))
+        line(12, 11, 12, 17)
+        painter.drawEllipse(QRectF(11.5, 6.5, 1, 1))
     else:
         painter.drawPolygon(QPolygonF([QPointF(12, 2), QPointF(21, 7), QPointF(21, 17),
                                       QPointF(12, 22), QPointF(3, 17), QPointF(3, 7)]))
@@ -158,8 +176,7 @@ def mod_icon(mod, color='#f0ece8'):
 class ModDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         view = self.parent()
-        count = max(1, min(4, view.count()))
-        return QSize(max(185, view.viewport().width() // count), 53)
+        return QSize(224, 57)
 
     def paint(self, painter, option, index):
         painter.save()
@@ -184,8 +201,11 @@ class ModDelegate(QStyledItemDelegate):
         font = QFont('Oswald', 15)
         painter.setFont(font)
         painter.setPen(QColor(foreground))
-        painter.drawText(QRectF(left, rect.y(), width, rect.height()), Qt.AlignmentFlag.AlignVCenter,
+        painter.drawText(QRectF(left, rect.y() + 1, width, 28), Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(lines[0], Qt.TextElideMode.ElideRight, width))
+        painter.setFont(QFont('Segoe UI' if sys.platform == 'win32' else 'DejaVu Sans', 9))
+        painter.drawText(QRectF(left, rect.y() + 28, width, 19), Qt.AlignmentFlag.AlignVCenter,
+                         painter.fontMetrics().elidedText(lines[1] if len(lines) > 1 else '', Qt.TextElideMode.ElideRight, width))
         if option.state & QStyle.StateFlag.State_HasFocus:
             painter.setPen(QPen(QColor('#101113' if selected else '#02e5a2'), 1, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)

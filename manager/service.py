@@ -52,19 +52,79 @@ class Manager:
 
     def _state(self):
         raw = self._read(self.state_file)
-        if raw is None: return {"schema_version": 1, "mods": {}, "loader": {"files": {}}}
+        if raw is None: return {"schema_version": 2, "mods": {}, "loader": {"files": {}}}
         state = parse_json(raw)
-        if not isinstance(state, dict) or state.get("schema_version") != 1 or not isinstance(state.get("mods"), dict):
+        if not isinstance(state, dict) or type(state.get("schema_version")) is not int or state['schema_version'] not in (1, 2) or not isinstance(state.get("mods"), dict):
             raise ValueError("Invalid manager manifest")
+        legacy = state['schema_version'] == 1
+        seen = set()
         for key, entry in list(state["mods"].items()) + [("loader", state.get("loader", {"files": {}}))]:
             if key != "loader" and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", key): raise ValueError("Invalid managed mod ID")
             if not isinstance(entry, dict) or not isinstance(entry.get("files"), dict): raise ValueError("Invalid ownership manifest")
+            if key != 'loader':
+                if key.casefold() in seen: raise ValueError('Case-colliding ownership folders')
+                seen.add(key.casefold())
+                if legacy:
+                    entry['source_id'] = 'official'
+                    entry['mod_id'] = key
+                    entry['personal_files'] = ['settings.json', 'settings.lua']
+                    if key == 'FamSwap': entry['personal_files'] += ['bar.png', 'bar.jpg', 'game.png', 'game.jpg']
+                    if key == 'MovieSwap': entry['personal_files'] += ['Movies']
+                if not isinstance(entry.get('source_id'), str) or not entry['source_id'] or entry.get('mod_id', key) != key:
+                    raise ValueError('Invalid source ownership')
+                if not isinstance(entry.get('personal_files', []), list): raise ValueError('Invalid personal file ownership')
+                for name in entry.get('personal_files', []): safe_path(name)
             for name, digest in entry["files"].items():
                 safe_path(name)
                 if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest): raise ValueError("Invalid file hash")
+        state['schema_version'] = 2
+        history = state.setdefault('personal_files', {})
+        if not isinstance(history, dict): raise ValueError('Invalid personal file history')
+        for folder, names in history.items():
+            safe_path(folder)
+            if '/' in folder or not isinstance(names, list): raise ValueError('Invalid personal file history')
+            for name in names: safe_path(name)
         return state
 
+    @staticmethod
+    def _is_personal(path, names):
+        folded = path.casefold()
+        return any(folded == name.casefold() or folded.startswith(name.casefold() + '/')
+                   or name.casefold().startswith(folded + '/') for name in names)
+
+    @staticmethod
+    def _remember_personal(state, mod, names):
+        history = state.setdefault('personal_files', {})
+        old = next((key for key in history if key.casefold() == mod['id'].casefold()), mod['id'])
+        history[old] = sorted(set(history.get(old, [])) | set(names))
+
+    @property
+    def source_id(self):
+        return getattr(self.snapshot, 'source_id', 'official')
+
+    @staticmethod
+    def _entrypoints(mod):
+        points = mod.get('entrypoints', [{'type': 'lua', 'path': 'Scripts/main.lua'}])
+        if not isinstance(points, list) or not points: raise ValueError('Invalid installed entrypoints')
+        return [safe_path(item['path']) for item in points]
+
+    def _ownership(self, mod, state=None):
+        state = self._state() if state is None else state
+        for name, entry in state['mods'].items():
+            if name.casefold() == mod['id'].casefold():
+                if name != mod['id'] or entry['source_id'] != self.source_id:
+                    raise ValueError('Folder conflict: this mod folder is owned by another source or spelling.')
+                return entry
+        if self.mods_dir.exists():
+            self._safe(self.mods_dir)
+            for folder in self.mods_dir.iterdir():
+                if folder.name.casefold() == mod['id'].casefold() and folder.name != mod['id']:
+                    raise ValueError('Folder conflict: existing folder uses different case.')
+        return None
+
     def _mod(self, mod):
+        if isinstance(mod, dict) and mod.get('_source_id', self.source_id) != self.source_id:
+            raise ValueError('Mod reference belongs to another source')
         if isinstance(mod, str):
             if self.snapshot is None: raise ValueError("Load a catalogue first")
             matches = [entry for entry in self.snapshot.mods if entry["id"] == mod]
@@ -77,6 +137,13 @@ class Manager:
     def _transaction(self, changes):
         """Stage complete files; preserve durable originals and roll back changed paths on failure."""
         self._guard()
+        # Read-only status never migrates; every successful mutation can do so
+        # in the same transaction as its actual change.
+        if self.state_file not in changes:
+            raw = self._read(self.state_file)
+            if raw is not None and parse_json(raw).get('schema_version') == 1:
+                changes = dict(changes)
+                changes[self.state_file] = _json(self._state())
         previous = {}
         for path, data in changes.items():
             self._safe(path)
@@ -175,8 +242,14 @@ class Manager:
 
     def status(self, mod):
         mod = self._mod(mod); folder = self.mods_dir / mod["id"]
-        installed = self._read(folder / "Scripts/main.lua") is not None
-        entry = self._state()["mods"].get(mod["id"])
+        try:
+            entry = self._ownership(mod)
+        except ValueError as error:
+            if not str(error).startswith('Folder conflict:'): raise
+            return {'installed': False, 'enabled': False, 'update': False, 'version': '', 'managed': False,
+                    'conflict': str(error)}
+        installed_definition = (entry or {}).get('definition', mod)
+        installed = all(self._read(folder / path) is not None for path in self._entrypoints(installed_definition))
         has_marker = self._read(folder / "enabled.txt") is not None
         active_sources = []
         # UE4SS activation markers bypass the mods.txt list. Preserve that state on adoption.
@@ -192,60 +265,100 @@ class Manager:
         if installed:
             update = entry is None or entry.get("version") != mod["version"]
             for relative in mod["files"]:
+                if self._is_personal(relative, (entry or {}).get('personal_files', [])): continue
                 expected = self.snapshot.files["Mods/%s/%s" % (mod["id"], relative)]
                 if self._read(folder / relative) != expected: update = True
         return {"installed": installed, "enabled": bool(enabled), "update": update,
                 "version": entry.get("version", "unknown") if entry else "unknown" if installed else "",
-                "managed": bool(entry)}
+                "managed": bool(entry), 'conflict': ''}
 
-    def install(self, mod, progress=None):
+    def install(self, mod, progress=None, enabled=None):
         self._guard(); mod = self._mod(mod); state = self._state()
+        if mod.get('available') is False: raise ValueError('This package is no longer available from its source.')
+        if mod['id'].casefold() in {name.casefold() for name in (*CRASH_PRONE, 'shared', 'Keybinds')}:
+            raise ValueError('This reserved UE4SS mod cannot be installed from a catalogue.')
+        previous_entry = self._ownership(mod, state) or {}
+        if enabled is not None and type(enabled) is not bool: raise ValueError('Enabled must be boolean')
         if progress: progress("Installing " + mod["name"] + "…")
         folder = self.mods_dir / mod["id"]; changes = {}; hashes = {}
+        personal = set(previous_entry.get('personal_files', [])) | set(mod.get('default_files', []))
+        for name, paths in state.get('personal_files', {}).items():
+            if name.casefold() == mod['id'].casefold(): personal.update(paths)
+        personal.update(target['file'] for target in mod.get('configuration', []))
+        personal.update(image['file'] for image in mod.get('images', []))
+        if mod.get('video_folder'): personal.add(mod['video_folder'])
+        if self.source_id == 'official': personal.update(('settings.lua', 'settings.json'))
+        def protected(path):
+            return self._is_personal(path, personal)
         for relative in mod["files"]:
+            if protected(relative): continue
             data = self.snapshot.files["Mods/%s/%s" % (mod["id"], relative)]
             changes[folder / relative] = data; hashes[relative] = _digest(data)
+        for relative in mod.get('default_files', []):
+            if self._read(folder / relative) is None:
+                changes[folder / relative] = self.snapshot.files['Mods/%s/%s' % (mod['id'], relative)]
         # Delete obsolete owned files only if they still match the last installed content.
         for relative, digest in state["mods"].get(mod["id"], {}).get("files", {}).items():
-            if relative not in hashes:
+            if relative not in hashes and not protected(relative):
                 old = self._read(folder / relative)
                 if old is not None and _digest(old) == digest: changes[folder / relative] = None
-        was_installed = self._read(folder / "Scripts/main.lua") is not None
-        enabled = self.status(mod)["enabled"] if was_installed else True
+        before = self.status(mod)
+        enabled = before['enabled'] if before['installed'] else True if enabled is None else enabled
         changes.update(self._activation(mod["id"], enabled))
-        state["mods"][mod["id"]] = {"version": mod["version"], "revision": self.snapshot.revision, "files": hashes}
+        state["mods"][mod["id"]] = {"version": mod["version"], "revision": self.snapshot.revision, "files": hashes,
+                                    'source_id': self.source_id, 'mod_id': mod['id'],
+                                    'personal_files': sorted(personal), 'definition': mod}
+        self._remember_personal(state, mod, personal)
         changes[self.state_file] = _json(state)
         self._transaction(changes)
 
     def set_enabled(self, mod, enabled):
         self._guard(); mod = self._mod(mod)
+        self._ownership(mod)
         if type(enabled) is not bool: raise ValueError("Enabled must be boolean")
-        if self._read(self.mods_dir / mod["id"] / "Scripts/main.lua") is None: raise ValueError("Install the mod first")
-        self._transaction(self._activation(mod["id"], enabled))
+        if not self.status(mod)['installed']:
+            raise ValueError("Install the mod first")
+        changes = self._activation(mod['id'], enabled)
+        if self.state_file.exists(): changes[self.state_file] = _json(self._state())
+        self._transaction(changes)
 
     def remove(self, mod):
-        self._guard(); mod = self._mod(mod); state = self._state(); changes = self._activation(mod["id"], False)
+        self._guard(); mod = self._mod(mod); state = self._state(); self._ownership(mod, state)
+        changes = self._activation(mod["id"], False)
         entry = state["mods"].pop(mod["id"], None)
         if entry:
+            self._remember_personal(state, mod, entry.get('personal_files', []))
             for relative, digest in entry["files"].items():
+                if self._is_personal(relative, entry.get('personal_files', [])): continue
                 path = self.mods_dir / mod["id"] / relative; data = self._read(path)
                 if data is not None and _digest(data) == digest: changes[path] = None
         changes[self.state_file] = _json(state)
         self._transaction(changes)
 
     def settings(self, mod):
-        mod = self._mod(mod); raw = self._read(self.mods_dir / mod["id"] / "settings.json")
+        mod = self._mod(mod); self._ownership(mod)
+        if 'configuration' in mod:
+            from .configuration import read_configuration
+            return read_configuration(mod, lambda path: self._read(self.mods_dir / mod['id'] / path))
+        raw = self._read(self.mods_dir / mod["id"] / "settings.json")
+        if not mod.get('settings'): return {}
         return validate_settings(mod, parse_json(raw) if raw is not None else {})
 
     def save_settings(self, mod, values):
         self._guard(); mod = self._mod(mod)
         # Read and validate existing settings before replacement, even for a full reset.
         self.settings(mod)
-        values = validate_settings(mod, values); folder = self.mods_dir / mod["id"]
+        folder = self.mods_dir / mod["id"]
+        if 'configuration' in mod:
+            from .configuration import write_configuration
+            proposed = write_configuration(mod, values, lambda path: self._read(folder / path))
+            self._transaction({folder / path: data for path, data in proposed.items()})
+            return
+        values = validate_settings(mod, values)
         self._transaction({folder / "settings.json": _json(values), folder / "settings.lua": lua_settings(values)})
 
     def _media_path(self, mod, relative_path):
-        mod = self._mod(mod); safe_path(relative_path)
+        mod = self._mod(mod); self._ownership(mod); safe_path(relative_path)
         allowed = {image["file"] for image in mod.get("images", [])}
         if "video_list" in mod:
             source = self.snapshot.files.get("Mods/%s/%s" % (mod["id"], mod["video_list"]))
@@ -261,7 +374,14 @@ class Manager:
     def write_user_file(self, mod, relative_path, data):
         self._guard()
         if not isinstance(data, bytes): raise ValueError("Media data must be bytes")
-        self._transaction({self._media_path(mod, relative_path): data})
+        path = self._media_path(mod, relative_path)
+        mod = self._mod(mod)
+        state = self._state()
+        self._remember_personal(state, mod, [relative_path])
+        entry = state['mods'].get(mod['id'])
+        if entry:
+            entry['personal_files'] = sorted(set(entry.get('personal_files', [])) | {relative_path})
+        self._transaction({path: data, self.state_file: _json(state)})
 
     def remove_user_file(self, mod, relative_path):
         self._guard()

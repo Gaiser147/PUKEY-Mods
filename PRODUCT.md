@@ -16,7 +16,7 @@ Players installing PUKEY demo mods who want selection, updates and configuration
 
 ## Capabilities and constraints
 
-Detect Steam libraries or select a game folder; fetch the fixed public GitHub catalogue; install, update, enable, disable and remove selected mods; configure supported settings; prepare FamSwap images and import MovieSwap videos. Preserve user files and show actionable errors. UE4SS is obtained separately from its official release. Linux runtime compatibility is unverified.
+Detect Steam libraries or select a game folder; fetch the official catalogue and independently added GitHub/HTTPS/local ZIP sources; install, update, enable, disable and remove Lua/native UE4SS mods. Manifest-backed forms support Lua/JSON/INI configuration, per-field defaults and explanations; existing packages can use basic import. Prepare FamSwap images, import MovieSwap videos and inspect read-only live logs. Preserve user files and show actionable errors. UE4SS is obtained separately from its official release. Linux gameplay compatibility is unverified.
 
 ## Voice and evidence
 

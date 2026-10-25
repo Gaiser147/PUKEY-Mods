@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QLineEdit, QFileDialog, QListWidget, QListWidgetItem,
     QScrollArea, QFormLayout, QDoubleSpinBox, QComboBox,
-    QCheckBox, QTabWidget, QProgressBar, QMessageBox, QFrame,
+    QCheckBox, QTabWidget, QProgressBar, QMessageBox, QFrame, QToolButton,
 )
 
 from . import __version__
@@ -86,6 +86,12 @@ class Window(QMainWindow):
         self.preferences_path = preferences_path or Path(
             QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation)) / 'preferences.json'
         self.cache_dir = self.preferences_path.parent / 'cache'
+        from .sources import SourceStore
+        self.source_store = SourceStore(self.preferences_path.parent / 'library')
+        self._source_packages = {}
+        self._source_selected = {}
+        self._import_dialog = None
+        self._logs_window = None
         self._build()
         self.setStyleSheet(stylesheet())
         self._theme_presence_timer = QTimer(self)
@@ -99,6 +105,8 @@ class Window(QMainWindow):
             self.render_details()
         if start_online:
             QTimer.singleShot(0, self.startup)
+        if self.source_store.registry.exists():
+            QTimer.singleShot(0, self.load_sources)
 
     def _build(self):
         body = QWidget()
@@ -127,6 +135,9 @@ class Window(QMainWindow):
         self.folder_button.setChecked(True)
         self.folder_button.toggled.connect(self.toggle_game_panel)
         top_actions.addWidget(self.folder_button)
+        self.add_mod_button = QPushButton('Add mod…')
+        self.add_mod_button.clicked.connect(self.add_mods)
+        top_actions.addWidget(self.add_mod_button)
         self.refresh_button = QPushButton('Refresh catalogue')
         self.refresh_button.setObjectName('headerAction')
         self.refresh_button.setShortcut('Ctrl+R')
@@ -239,6 +250,13 @@ class Window(QMainWindow):
         self.guide_button.setAccessibleName('Open mod guide')
         self.guide_button.clicked.connect(self.open_guide)
         utility.addWidget(self.guide_button)
+        self.config_button = QPushButton()
+        self.config_button.setObjectName('iconAction')
+        self.config_button.setIcon(icon('folder'))
+        self.config_button.setAccessibleName('Open configuration files')
+        self.config_button.setToolTip('Open the mod folder to edit configuration files')
+        self.config_button.clicked.connect(self.open_configuration)
+        utility.addWidget(self.config_button)
         self.remove_button = QPushButton()
         self.remove_button.setObjectName('iconAction')
         self.remove_button.setIcon(icon('trash'))
@@ -246,10 +264,18 @@ class Window(QMainWindow):
         self.remove_button.clicked.connect(self.remove_current)
         utility.addWidget(self.remove_button)
         action_column.addLayout(utility)
+        self.initial_enable = QCheckBox('Enable after installation')
+        self.initial_enable.setChecked(True)
+        action_column.addWidget(self.initial_enable)
+        self.zip_update_button = QPushButton('Update from ZIP…')
+        self.zip_update_button.clicked.connect(self.update_from_zip)
+        action_column.addWidget(self.zip_update_button)
         header.addLayout(action_column)
         content.addWidget(self.mod_header)
         self.description = text_label('', 'muted')
         content.addWidget(self.description)
+        self.origin_label = text_label('', 'muted')
+        content.addWidget(self.origin_label)
         self.controls_label = None
         self.tabs = QTabWidget()
         self.settings_scroll = QScrollArea()
@@ -340,12 +366,108 @@ class Window(QMainWindow):
         self.status_label = text_label('Ready. Personal files are kept during updates.', 'operationStatus')
         self.status_label.setMinimumHeight(24)
         status.addWidget(self.status_label, 1)
+        self.logs_button = QPushButton('Logs…')
+        self.logs_button.setObjectName('sideLink')
+        self.logs_button.clicked.connect(self.open_logs)
+        status.addWidget(self.logs_button)
         repo = QPushButton('v' + __version__ + '  ·  GitHub')
         repo.setObjectName('sideLink')
         repo.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(REPOSITORY)))
         status.addWidget(repo)
         outer.addLayout(status)
         self.update_controls()
+
+    def snapshot_for(self, mod):
+        source = mod.get('_source_id', 'official')
+        return self.snapshot if source == 'official' else self._source_packages[source]
+
+    def manager_for(self, mod):
+        from .service import Manager
+        if not isinstance(self.manager, Manager): return self.manager
+        return Manager(self.manager.game_root, self.snapshot_for(mod))
+
+    def library_mods(self):
+        result = [dict(mod, _source_id='official') for mod in self.snapshot.mods] if self.snapshot else []
+        for source_id, snapshot in self._source_packages.items():
+            if source_id == 'official': continue
+            chosen = self._source_selected.get(source_id, [])
+            result.extend(dict(mod, _source_id=source_id) for mod in snapshot.mods if mod['id'] in chosen)
+        return result
+
+    def source_added(self, source_id, snapshot, selected_ids):
+        self._source_packages[source_id] = snapshot
+        self._source_selected[source_id] = selected_ids
+        self.populate()
+        self.notice('Mods added. Select a tab and choose Install mod.')
+
+    def load_sources(self):
+        if self._busy or self._dirty:
+            QTimer.singleShot(250, self.load_sources)
+            return
+        def load(progress):
+            packages, selected, errors = {}, {}, []
+            for record in self.source_store.records:
+                try:
+                    packages[record['id']] = self.source_store.load(record['id'])
+                    selected[record['id']] = record['selected_ids']
+                except Exception as error: errors.append(str(error))
+            return packages, selected, errors
+        def accepted(result):
+            self._source_packages, self._source_selected, errors = result
+            if self.snapshot is None:
+                self.snapshot = self._source_packages.get('official')
+                self.source_label.setText('Saved library')
+            self.populate()
+            self.notice('Saved library loaded.' if not errors else 'Some saved sources could not be loaded: ' + '; '.join(errors), bool(errors))
+        self.run_job('Loading saved mod sources…', load, accepted)
+
+    def add_mods(self):
+        if not self.allow_discard(): return
+        from .import_dialog import ImportDialog
+        if self._import_dialog is None:
+            self._import_dialog = ImportDialog(self.source_store, self.source_added, self)
+        self._import_dialog.update_source_id = None
+        self._import_dialog.show()
+        self._import_dialog.raise_()
+        self._import_dialog.activateWindow()
+
+    def update_from_zip(self):
+        if not self.current_mod or not self.allow_discard(): return
+        source_id = self.current_mod.get('_source_id', 'official')
+        if source_id == 'official': return
+        snapshot = self._source_packages[source_id]
+        if getattr(snapshot, 'origin', {}).get('kind') != 'local':
+            from .import_dialog import ImportDialog
+            if self._import_dialog and self._import_dialog.busy: return
+            self._import_dialog = ImportDialog(self.source_store, self.source_added, self)
+            self._import_dialog.update_source_id = source_id
+            record = next(record for record in self.source_store.records if record['id'] == source_id)
+            self._import_dialog.origin.setText(record['origin'])
+            self._import_dialog.show()
+            self._import_dialog.analyze()
+            return
+        path, _ = QFileDialog.getOpenFileName(self, 'Update this source from ZIP', '', 'Mod archives (*.zip)')
+        if not path: return
+        selected = self._source_selected[source_id]
+        self.run_job('Validating replacement ZIP…',
+            lambda progress: self.source_store.update_from_package(source_id, Path(path), progress),
+            lambda snapshot: self.source_added(source_id, snapshot, selected))
+
+    def open_logs(self):
+        from .log_window import LogsWindow
+        root = self.manager.game_root if self.manager and hasattr(self.manager, 'game_root') else None
+        if self._logs_window is None or getattr(self._logs_window, '_game_root', None) != root:
+            if self._logs_window: self._logs_window.close()
+            self._logs_window = LogsWindow(root, self)
+            self._logs_window._game_root = root
+        self._logs_window.show()
+        self._logs_window.raise_()
+        self._logs_window.activateWindow()
+
+    def open_configuration(self):
+        if self.manager and self.current_mod:
+            folder = self.manager.win64 / 'ue4ss/Mods' / self.current_mod['id']
+            if folder.is_dir(): QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
 
     def toggle_game_panel(self, expanded):
         self.game_panel.setVisible(expanded)
@@ -445,7 +567,36 @@ class Window(QMainWindow):
         from .catalog import fetch_latest
         if not self.allow_discard():
             return
-        self.run_job('Checking GitHub for mods…', lambda progress: fetch_latest(self.cache_dir, progress), self.accept_snapshot)
+        def refresh(progress):
+            errors, packages, selected = [], {}, {}
+            official = None
+            try:
+                official = fetch_latest(self.cache_dir, progress)
+                records = self.source_store.records
+                if any(r['id'] == 'official' for r in records):
+                    official = self.source_store.update('official', official)
+                else:
+                    self.source_store.add(official, REPOSITORY, [m['id'] for m in official.mods], 'official')
+            except Exception as error: errors.append('Official catalogue: ' + str(error))
+            for record in self.source_store.records:
+                if record['id'] == 'official': continue
+                selected[record['id']] = record['selected_ids']
+                try:
+                    packages[record['id']] = (self.source_store.load(record['id']) if record['kind'] == 'local'
+                                              else self.source_store.refresh(record['id'], progress))
+                except Exception as error:
+                    errors.append(record['origin'] + ': ' + str(error))
+                    try: packages[record['id']] = self.source_store.load(record['id'])
+                    except Exception: pass
+            return official, packages, selected, errors
+        def accepted(result):
+            official, packages, selected, errors = result
+            self._source_packages.update(packages)
+            self._source_selected.update(selected)
+            if official: self.accept_snapshot(official)
+            else: self.populate()
+            if errors: self.notice('Some sources could not refresh; saved copies were kept. ' + '; '.join(errors), True)
+        self.run_job('Checking mod sources…', refresh, accepted)
 
     def use_cached(self):
         from .catalog import load_cached
@@ -519,7 +670,7 @@ class Window(QMainWindow):
     def mod_status(self, mod):
         if self.manager:
             try:
-                return self.manager.status(mod)
+                return self.manager_for(mod).status(mod)
             except Exception as error:
                 self._state_error = str(error)
                 self.notice('Installation configuration could not be read: ' + str(error), True)
@@ -527,19 +678,21 @@ class Window(QMainWindow):
 
     def populate(self):
         self._state_error = None
-        selected = self.current_mod['id'] if self.current_mod else None
+        selected = ((self.current_mod.get('_source_id', 'official'), self.current_mod['id']) if self.current_mod else None)
         self.mod_list.blockSignals(True)
         self.mod_list.clear()
         chosen = 0
-        for index, mod in enumerate(self.snapshot.mods if self.snapshot else []):
+        for index, mod in enumerate(self.library_mods()):
             state = self.mod_status(mod)
-            status = ('Update available' if state['update'] else
-                      'Enabled' if state['installed'] and state['enabled'] else
+            status = ('Enabled' if state['installed'] and state['enabled'] else
                       'Disabled' if state['installed'] else 'Not installed')
+            if state.get('conflict'): status = 'Source conflict'
+            if state['update']: status += ' · Update available'
             item = QListWidgetItem(mod['name'] + '\n' + status)
             item.setData(Qt.ItemDataRole.UserRole, mod)
+            item.setToolTip(mod['name'] + '\n' + status + '\nSource: ' + mod.get('_source_id', 'official'))
             self.mod_list.addItem(item)
-            if mod['id'] == selected:
+            if (mod.get('_source_id', 'official'), mod['id']) == selected:
                 chosen = index
         self.mod_list.setCurrentRow(chosen if self.mod_list.count() else -1)
         self.mod_list.blockSignals(False)
@@ -553,9 +706,10 @@ class Window(QMainWindow):
             item = self.mod_list.item(index)
             mod = item.data(Qt.ItemDataRole.UserRole)
             state = self.mod_status(mod)
-            status = ('Update available' if state['update'] else
-                      'Enabled' if state['installed'] and state['enabled'] else
+            status = ('Enabled' if state['installed'] and state['enabled'] else
                       'Disabled' if state['installed'] else 'Not installed')
+            if state.get('conflict'): status = 'Source conflict'
+            if state['update']: status += ' · Update available'
             item.setText(mod['name'] + '\n' + status)
         self.update_controls()
 
@@ -575,7 +729,8 @@ class Window(QMainWindow):
         if not self.allow_discard():
             self.mod_list.blockSignals(True)
             for index in range(self.mod_list.count()):
-                if self.mod_list.item(index).data(Qt.ItemDataRole.UserRole)['id'] == previous['id']:
+                candidate = self.mod_list.item(index).data(Qt.ItemDataRole.UserRole)
+                if (candidate.get('_source_id', 'official'), candidate['id']) == (previous.get('_source_id', 'official'), previous['id']):
                     self.mod_list.setCurrentRow(index)
             self.mod_list.blockSignals(False)
             return
@@ -585,6 +740,8 @@ class Window(QMainWindow):
 
     def render_details(self):
         self.settings_widgets = {}
+        self.reset_buttons = {}
+        self.help_buttons = {}
         self._settings_error = False
         self._dirty = False
         self._image_bytes = None
@@ -593,6 +750,12 @@ class Window(QMainWindow):
         self.mod_title.setText(mod['name'] if mod else 'Your mod library')
         self.mod_icon_label.setPixmap(mod_icon(mod or {}).pixmap(30, 30))
         self.description.setText(mod['description'] if mod else 'Refresh the catalogue to discover mods, then choose your game folder to begin.')
+        source = mod.get('_source_id', 'official') if mod else 'official'
+        details = getattr(self.snapshot_for(mod), 'origin', {}) if mod else {}
+        self.origin_label.setText(('Source: ' + str(details.get('origin', source)) +
+                                  (' · by ' + mod['author'] if mod.get('author') else '') +
+                                  (' · No longer offered by the source' if mod.get('available') is False else '')) if source != 'official' else '')
+        self.origin_label.setVisible(source != 'official')
         self.settings_page = QWidget()
         self.keys_page = QWidget()
         preferences = QVBoxLayout(self.settings_page)
@@ -603,7 +766,7 @@ class Window(QMainWindow):
         defaults = {field['key']: field['default'] for field in mod.get('settings', [])} if mod else {}
         if mod and self.manager:
             try:
-                defaults = self.manager.settings(mod)
+                defaults = self.manager_for(mod).settings(mod)
             except Exception as error:
                 self._settings_error = True
                 self.notice(str(error) + ' Settings were not overwritten.', True)
@@ -624,6 +787,10 @@ class Window(QMainWindow):
                 widget.setSingleStep(field.get('step', 1))
                 widget.setValue(value)
                 widget.valueChanged.connect(self.mark_dirty)
+            elif field['type'] == 'string':
+                widget = QLineEdit(str(value))
+                widget.setMaxLength(4096)
+                widget.textChanged.connect(self.mark_dirty)
             else:
                 widget = QComboBox()
                 widget.addItems(KEYS if field['type'] == 'key' else field['options'])
@@ -640,14 +807,37 @@ class Window(QMainWindow):
             row_layout.setSpacing(12)
             label = text_label(field['label'])
             label.setBuddy(widget)
+            from .setting_help import HelpButton
+            help_button = HelpButton(field)
+            self.help_buttons[field['key']] = help_button
+            reset = QToolButton()
+            reset.setIcon(icon('undo'))
+            reset.setAutoRaise(True)
+            reset.setFixedSize(26, 28)
+            reset.setAccessibleName('Reset ' + field['label'])
+            reset.setToolTip('Reset to default: ' + str(field['default']) + '. Save settings to apply.')
+            reset.clicked.connect(lambda checked=False, key=field['key'], default=field['default']: self.reset_setting(key, default))
+            self.reset_buttons[field['key']] = reset
             if field['type'] == 'key':
-                row_layout.addWidget(widget)
-                row_layout.addWidget(label, 1)
+                row.setMinimumHeight(84)
+                stack = QVBoxLayout()
+                top = QHBoxLayout()
+                top.addWidget(label, 1)
+                top.addWidget(help_button)
+                bottom = QHBoxLayout()
+                bottom.addWidget(widget, 1)
+                bottom.addStretch()
+                bottom.addWidget(reset)
+                stack.addLayout(top)
+                stack.addLayout(bottom)
+                row_layout.addLayout(stack)
                 bindings.addWidget(row)
                 key_count += 1
             else:
                 row_layout.addWidget(label, 1)
+                row_layout.addWidget(help_button)
                 row_layout.addWidget(widget)
+                row_layout.addWidget(reset)
                 preferences.addWidget(row)
                 general_count += 1
             self.settings_widgets[field['key']] = widget
@@ -681,7 +871,23 @@ class Window(QMainWindow):
         self.unsaved_label.setText('Unsaved settings')
         self.update_controls()
 
+    @staticmethod
+    def field_value(widget):
+        return (widget.isChecked() if isinstance(widget, QCheckBox) else
+                widget.value() if isinstance(widget, QDoubleSpinBox) else
+                widget.text() if isinstance(widget, QLineEdit) else widget.currentText())
+
+    def reset_setting(self, key, default):
+        widget = self.settings_widgets[key]
+        if isinstance(widget, QCheckBox): widget.setChecked(default)
+        elif isinstance(widget, QDoubleSpinBox): widget.setValue(default)
+        elif isinstance(widget, QLineEdit): widget.setText(default)
+        else: widget.setCurrentText(default)
+
     def update_controls(self):
+        fields = {field['key']: field for field in (self.current_mod or {}).get('settings', [])}
+        for key, button in getattr(self, 'reset_buttons', {}).items():
+            button.setEnabled(self.field_value(self.settings_widgets[key]) != fields[key]['default'])
         ready = not self._busy
         has_mod = self.current_mod is not None
         self.sheets_container.setVisible(has_mod)
@@ -694,7 +900,7 @@ class Window(QMainWindow):
         self.detail_footer.setVisible(has_mod)
         self.empty_state.setVisible(not has_mod)
         self.empty_heading.setText('Preparing your library…' if self._busy else 'Set up your mod library')
-        for widget in [self.refresh_button, self.cached_button, self.browse_button, self.detect_button, self.path_edit, self.mod_list]:
+        for widget in [self.refresh_button, self.cached_button, self.browse_button, self.detect_button, self.path_edit, self.mod_list, self.add_mod_button]:
             widget.setEnabled(ready)
         state = self.mod_status(self.current_mod) if self.current_mod else {'installed': False, 'enabled': False}
         installed = state['installed']
@@ -707,7 +913,7 @@ class Window(QMainWindow):
             self.folder_button.setChecked(False)
         self._loader_ready = loader
         self.loader_button.setText('UE4SS ready' if loader else 'Install UE4SS')
-        writable = ready and not self._state_error
+        writable = ready and not self._state_error and not state.get('conflict')
         self.loader_button.setEnabled(writable and self.manager is not None and not loader)
         self.loader_button.setVisible(self.manager is not None and not loader)
         for button, prominent in ((self.detect_button, self.manager is None),
@@ -717,7 +923,16 @@ class Window(QMainWindow):
                 button.style().unpolish(button)
                 button.style().polish(button)
         self.install_button.setText('Update mod' if state.get('update') else 'Reinstall mod' if installed else 'Install mod')
-        self.install_button.setEnabled(writable and loader and self.current_mod is not None and self.snapshot is not None)
+        self.install_button.setEnabled(writable and loader and self.current_mod is not None and self.current_mod.get('available') is not False)
+        external = bool(self.current_mod and self.current_mod.get('_source_id', 'official') != 'official')
+        self.initial_enable.setVisible(external and not installed)
+        self.initial_enable.setEnabled(writable and not installed)
+        self.zip_update_button.setVisible(external)
+        self.zip_update_button.setEnabled(ready)
+        if external:
+            source = self.current_mod['_source_id']
+            local = getattr(self._source_packages.get(source), 'origin', {}).get('kind') == 'local'
+            self.zip_update_button.setText('Update from ZIP…' if local else 'Source options…')
         self.enabled_checkbox.blockSignals(True)
         self.enabled_checkbox.setChecked(state['enabled'])
         self.enabled_checkbox.setText('Enabled' if state['enabled'] else 'Disabled')
@@ -728,6 +943,7 @@ class Window(QMainWindow):
         self.remove_button.setToolTip('Removes tracked program files; personal files remain.' if state.get('managed') else
                                       'Reinstall once to track this manually installed mod before removing its program files.')
         self.guide_button.setEnabled(ready and self.current_mod is not None)
+        self.config_button.setEnabled(ready and installed and not state.get('conflict'))
         self.save_button.setEnabled(ready and installed and bool(self.settings_widgets) and not self._settings_error and self._dirty)
         media_tab = has_mod and self.tabs.currentWidget() == self.media_scroll
         image_tab = bool(media_tab and self.current_mod.get('images'))
@@ -751,8 +967,11 @@ class Window(QMainWindow):
         self.media_scroll.setEnabled(ready and installed)
         if not self.current_mod:
             status = 'Choose a mod from your library'
+        elif state.get('conflict'):
+            status = state['conflict']
         elif not installed:
-            status = 'Not installed'
+            status = ('Choose a game folder to install this mod.' if not self.manager else
+                      'Install UE4SS in Game folder… before installing this mod.' if not loader else 'Not installed')
         elif not state.get('managed'):
             status = 'Installed manually'
         else:
@@ -765,12 +984,15 @@ class Window(QMainWindow):
 
     def install_current(self):
         if self.current_mod and self.allow_discard():
-            mod, manager = self.current_mod, self.manager
-            self.run_job('Installing ' + mod['name'] + '…', lambda progress: manager.install(mod, progress))
+            mod = self.current_mod
+            manager = self.manager_for(mod)
+            enabled = self.initial_enable.isChecked() if mod.get('_source_id', 'official') != 'official' else None
+            self.run_job('Installing ' + mod['name'] + '…', lambda progress: manager.install(mod, progress, enabled=enabled))
 
     def toggle_current(self, enabled):
         if self.current_mod and self.manager and not self._busy:
-            mod, manager = self.current_mod, self.manager
+            mod = self.current_mod
+            manager = self.manager_for(mod)
             self.run_job('Updating mod activation…', lambda progress: manager.set_enabled(mod, enabled))
 
     def remove_current(self):
@@ -780,7 +1002,8 @@ class Window(QMainWindow):
             'Remove this mod’s program files? Your images, videos, settings and camera bookmarks will be kept.',
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
         if answer == QMessageBox.StandardButton.Yes:
-            mod, manager = self.current_mod, self.manager
+            mod = self.current_mod
+            manager = self.manager_for(mod)
             self.run_job('Removing mod program files…', lambda progress: manager.remove(mod))
 
     def save_settings(self):
@@ -788,9 +1011,9 @@ class Window(QMainWindow):
             return
         values = {}
         for key, widget in self.settings_widgets.items():
-            values[key] = (widget.isChecked() if isinstance(widget, QCheckBox) else
-                           widget.value() if isinstance(widget, QDoubleSpinBox) else widget.currentText())
-        mod, manager = self.current_mod, self.manager
+            values[key] = self.field_value(widget)
+        mod = self.current_mod
+        manager = self.manager_for(mod)
         def saved(result):
             self._dirty = False
             self.populate()
@@ -804,7 +1027,29 @@ class Window(QMainWindow):
 
     def open_guide(self):
         if self.current_mod:
-            QDesktopServices.openUrl(QUrl(REPOSITORY + '/tree/main/Mods/' + self.current_mod['id']))
+            mod = self.current_mod
+            if mod.get('_source_id', 'official') == 'official':
+                QDesktopServices.openUrl(QUrl(REPOSITORY + '/tree/main/Mods/' + mod['id']))
+                return
+            homepage = mod.get('homepage', '')
+            if homepage.startswith('https://'):
+                QDesktopServices.openUrl(QUrl(homepage))
+                return
+            snapshot = self.snapshot_for(mod)
+            readmes = [p for p in mod['files'] if Path(p).name.lower().startswith('readme')]
+            if readmes:
+                from PySide6.QtWidgets import QDialog, QPlainTextEdit
+                dialog = QDialog(self)
+                dialog.setWindowTitle(mod['name'] + ' · Guide')
+                dialog.resize(700, 500)
+                layout = QVBoxLayout(dialog)
+                view = QPlainTextEdit()
+                view.setReadOnly(True)
+                view.setPlainText(snapshot.files['Mods/' + mod['id'] + '/' + readmes[0]].decode('utf-8', errors='replace'))
+                layout.addWidget(view)
+                dialog.show()
+            else:
+                self.notice('This mod includes no guide. Use Source options or open its configuration folder.')
 
     def build_media(self, mod):
         page = QWidget()
@@ -881,7 +1126,7 @@ class Window(QMainWindow):
             layout.setContentsMargins(0, 22, 12, 14)
             layout.setSpacing(14)
             key = 'Mods/' + mod['id'] + '/' + mod['video_list']
-            targets = video_targets(self.snapshot.files[key])
+            targets = video_targets(self.snapshot_for(mod).files[key])
             layout.addWidget(text_label('Replace a game video', 'sectionTitle'))
             layout.addWidget(text_label('Choose the original clip, then import your replacement MP4.', 'muted'))
             self.video_choice = QComboBox()
@@ -944,14 +1189,16 @@ class Window(QMainWindow):
 
     def apply_image(self):
         if self._image_bytes and self._image_target:
-            mod, target, data, manager = self.current_mod, self._image_target, self._image_bytes, self.manager
+            mod, target, data = self.current_mod, self._image_target, self._image_bytes
+            manager = self.manager_for(mod)
             self.run_job('Saving replacement image…', lambda progress: manager.write_user_file(mod, target, data))
 
     def import_video(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Choose replacement video', '', 'MP4 video (*.mp4)')
         if not filename:
             return
-        mod, manager = self.current_mod, self.manager
+        mod = self.current_mod
+        manager = self.manager_for(mod)
         target = mod['video_folder'] + '/' + self.video_choice.currentText()
         def import_file(progress):
             source = Path(filename)
@@ -969,11 +1216,12 @@ class Window(QMainWindow):
             'Remove this custom replacement? A backup is kept. Restart the game afterwards.',
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
-            mod, manager = self.current_mod, self.manager
+            mod = self.current_mod
+            manager = self.manager_for(mod)
             self.run_job('Restoring original media…', lambda progress: manager.remove_user_file(mod, relative))
 
     def closeEvent(self, event: QCloseEvent):
-        if self._busy:
+        if self._busy or (self._import_dialog and self._import_dialog.busy):
             self.notice('Please wait for the current operation to finish before closing.')
             event.ignore()
         elif self.allow_discard():
