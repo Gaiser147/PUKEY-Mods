@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 try:
     from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox
@@ -41,7 +42,8 @@ class ManagerUiTests(unittest.TestCase):
     def test_image_preparation_actions_fit_the_small_desktop_view(self):
         from manager.catalog import Snapshot
         snapshot = Snapshot.from_directory(Path(__file__).resolve().parents[1])
-        window = self.make_window(snapshot)
+        with patch('manager.gui.sys.platform', 'linux'):
+            window = self.make_window(snapshot)
         window.manager = SimpleNamespace(win64=window.preferences_path.parent,
             status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': mod['version']},
             settings=lambda mod: {field['key']: field['default'] for field in mod.get('settings', [])})

@@ -181,6 +181,11 @@ class Window(QMainWindow):
         self.loader_button.setIcon(icon('download'))
         self.loader_button.clicked.connect(self.install_loader)
         heading.addWidget(self.loader_button)
+        if sys.platform.startswith('linux'):
+            copy = QPushButton('Copy Proton launch option')
+            copy.setToolTip("Copy the DLL override required in the game's Steam launch options")
+            copy.clicked.connect(lambda: QApplication.clipboard().setText(PROTON_OPTION))
+            heading.addWidget(copy)
         game_layout.addLayout(heading)
         path_row = QHBoxLayout()
         path_row.setSpacing(8)
@@ -198,13 +203,6 @@ class Window(QMainWindow):
         self.detect_button.clicked.connect(self.detect_games)
         path_row.addWidget(self.detect_button)
         game_layout.addLayout(path_row)
-        if sys.platform.startswith('linux'):
-            proton = QHBoxLayout()
-            proton.addWidget(text_label('Proton requires a Steam launch option.', 'muted'), 1)
-            copy = QPushButton('Copy launch option')
-            copy.clicked.connect(lambda: QApplication.clipboard().setText(PROTON_OPTION))
-            proton.addWidget(copy)
-            game_layout.addLayout(proton)
         outer.addWidget(game)
 
         self.mod_header = QWidget()

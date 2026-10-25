@@ -16,7 +16,7 @@ On Linux, the executable may need permission to run: `chmod +x PUKEY-Mod-Manager
 4. Select a mod and choose **Install mod**. Repeat for whichever mods you want.
 5. Adjust preferences under **Settings** or shortcuts under **Keybindings**, then choose **Save settings**. Both views share the same configuration. Restart the game after changing scripts, settings, activation, or removing replacement media.
 
-On Linux/Proton, use **Copy launch option**, then paste the DLL override into the game's Steam launch options:
+On Linux/Proton, use **Copy Proton launch option**, then paste the DLL override into the game's Steam launch options:
 
 ```bash
 WINEDLLOVERRIDES="dwmapi.dll=n,b" %command%
