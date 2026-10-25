@@ -10,11 +10,13 @@ from PySide6.QtGui import QDesktopServices, QPixmap, QCloseEvent, QFontDatabase,
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QLineEdit, QFileDialog, QListWidget, QListWidgetItem,
-    QSplitter, QScrollArea, QFormLayout, QDoubleSpinBox, QComboBox,
+    QScrollArea, QFormLayout, QDoubleSpinBox, QComboBox,
     QCheckBox, QTabWidget, QProgressBar, QMessageBox, QFrame,
 )
 
 from . import __version__
+from .theme import STYLE
+from .widgets import icon, mod_icon, ModDelegate, PreviewCanvas
 
 REPOSITORY = 'https://github.com/Gaiser147/PUKEY-Mods'
 PROTON_OPTION = 'WINEDLLOVERRIDES="dwmapi.dll=n,b" %command%'
@@ -92,137 +94,218 @@ class Window(QMainWindow):
     def _build(self):
         body = QWidget()
         self.setCentralWidget(body)
-        outer = QVBoxLayout(body)
-        outer.setContentsMargins(24, 20, 24, 16)
-        outer.setSpacing(16)
-        top = QHBoxLayout()
-        title = text_label('PUKEY  /  Mod Manager', 'appTitle')
-        title.setWordWrap(False)
-        top.addWidget(title)
-        top.addStretch()
-        self.source_label = text_label('Choose a game folder to get started.', 'muted')
-        top.addWidget(self.source_label)
-        self.refresh_button = QPushButton('Refresh mods')
+        shell = QHBoxLayout(body)
+        shell.setContentsMargins(0, 0, 0, 0)
+        shell.setSpacing(0)
+
+        sidebar = QFrame()
+        sidebar.setObjectName('sidebar')
+        sidebar.setFixedWidth(236)
+        rail = QVBoxLayout(sidebar)
+        rail.setContentsMargins(12, 26, 12, 18)
+        rail.setSpacing(12)
+        brand = QHBoxLayout()
+        brand.setContentsMargins(12, 0, 8, 0)
+        mark = text_label('P', 'brandMark')
+        mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        mark.setFixedSize(42, 42)
+        brand.addWidget(mark)
+        brand_text = QVBoxLayout()
+        brand_text.setSpacing(1)
+        brand_text.addWidget(text_label('PUKEY', 'brandName'))
+        brand_text.addWidget(text_label('Mod Manager', 'sidebarMuted'))
+        brand.addLayout(brand_text, 1)
+        rail.addLayout(brand)
+        rail.addSpacing(24)
+        library = QHBoxLayout()
+        library.setContentsMargins(14, 0, 14, 0)
+        library.addWidget(text_label('Your library', 'libraryLabel'), 1)
+        self.mod_count = text_label('0', 'sidebarMuted')
+        library.addWidget(self.mod_count)
+        rail.addLayout(library)
+        self.mod_list = QListWidget()
+        self.mod_list.setObjectName('modNavigation')
+        self.mod_list.setAccessibleName('Available mods')
+        self.mod_list.setItemDelegate(ModDelegate(self.mod_list))
+        self.mod_list.setMouseTracking(True)
+        self.mod_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mod_list.currentRowChanged.connect(self.select_mod)
+        rail.addWidget(self.mod_list, 1)
+        self.nav_empty = text_label('Refresh the catalogue to discover your mods.', 'sidebarMuted')
+        self.nav_empty.setContentsMargins(14, 0, 14, 8)
+        rail.addWidget(self.nav_empty)
+        self.source_label = text_label('Catalogue not loaded', 'sidebarMuted')
+        self.source_label.setContentsMargins(12, 0, 8, 0)
+        rail.addWidget(self.source_label)
+        self.refresh_button = QPushButton('Refresh catalogue')
+        self.refresh_button.setObjectName('sideRefresh')
+        self.refresh_button.setIcon(icon('refresh', '#ffffff'))
         self.refresh_button.setShortcut('Ctrl+R')
         self.refresh_button.clicked.connect(self.refresh_catalogue)
-        top.addWidget(self.refresh_button)
-        self.cached_button = QPushButton('Use cached')
-        self.cached_button.setToolTip('Use the last successfully downloaded catalogue without a network connection')
+        rail.addWidget(self.refresh_button)
+        self.cached_button = QPushButton('Use offline copy')
+        self.cached_button.setObjectName('sideLink')
+        self.cached_button.setToolTip('Open the last downloaded catalogue without a connection')
         self.cached_button.clicked.connect(self.use_cached)
-        top.addWidget(self.cached_button)
-        outer.addLayout(top)
+        rail.addWidget(self.cached_button)
+        rail.addSpacing(8)
+        bottom = QHBoxLayout()
+        bottom.setContentsMargins(12, 0, 4, 0)
+        bottom.addWidget(text_label('v' + __version__, 'sidebarMuted'), 1)
+        repo = QPushButton('GitHub')
+        repo.setObjectName('sideLink')
+        repo.setIcon(icon('link', '#b8bdb0'))
+        repo.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(REPOSITORY)))
+        bottom.addWidget(repo)
+        rail.addLayout(bottom)
+        shell.addWidget(sidebar)
 
-        location = QVBoxLayout()
-        location.setSpacing(8)
-        location.addWidget(text_label('Game location', 'sectionTitle'))
+        workspace = QWidget()
+        workspace.setObjectName('mainWorkspace')
+        outer = QVBoxLayout(workspace)
+        outer.setContentsMargins(28, 24, 28, 12)
+        outer.setSpacing(18)
+        game = QFrame()
+        game.setObjectName('gamePanel')
+        game_layout = QVBoxLayout(game)
+        game_layout.setContentsMargins(14, 11, 14, 12)
+        game_layout.setSpacing(8)
+        heading = QHBoxLayout()
+        heading.addWidget(text_label('Game folder', 'sectionTitle'), 1)
+        self.loader_icon = QLabel()
+        self.loader_icon.setFixedSize(16, 16)
+        heading.addWidget(self.loader_icon)
+        self.loader_label = text_label('Choose a game folder', 'muted')
+        heading.addWidget(self.loader_label)
+        self.loader_button = QPushButton('Install UE4SS')
+        self.loader_button.setIcon(icon('download'))
+        self.loader_button.clicked.connect(self.install_loader)
+        heading.addWidget(self.loader_button)
+        if sys.platform.startswith('linux'):
+            copy = QPushButton('Copy Proton launch option')
+            copy.setToolTip("Copy the DLL override required in the game's Steam launch options")
+            copy.clicked.connect(lambda: QApplication.clipboard().setText(PROTON_OPTION))
+            heading.addWidget(copy)
+        game_layout.addLayout(heading)
         path_row = QHBoxLayout()
+        path_row.setSpacing(8)
         self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText('Select the Steam game folder or its Win64 folder')
+        self.path_edit.setPlaceholderText('Select your PUKEY Steam installation')
         self.path_edit.setAccessibleName('Game folder')
         self.path_edit.editingFinished.connect(self.accept_typed_path)
         path_row.addWidget(self.path_edit, 1)
         self.browse_button = QPushButton('Browse…')
+        self.browse_button.setIcon(icon('folder'))
         self.browse_button.setShortcut('Ctrl+O')
         self.browse_button.clicked.connect(self.browse_game)
         path_row.addWidget(self.browse_button)
         self.detect_button = QPushButton('Find in Steam')
         self.detect_button.clicked.connect(self.detect_games)
         path_row.addWidget(self.detect_button)
-        location.addLayout(path_row)
-        loader_row = QHBoxLayout()
-        self.loader_label = text_label('Select a game folder to check UE4SS.', 'muted')
-        loader_row.addWidget(self.loader_label, 1)
-        self.loader_button = QPushButton('Install UE4SS')
-        self.loader_button.clicked.connect(self.install_loader)
-        loader_row.addWidget(self.loader_button)
-        location.addLayout(loader_row)
-        if sys.platform.startswith('linux'):
-            proton = QHBoxLayout()
-            proton.addWidget(text_label('Proton: add the DLL override to Steam launch options.', 'muted'), 1)
-            copy = QPushButton('Copy launch option')
-            copy.clicked.connect(lambda: QApplication.clipboard().setText(PROTON_OPTION))
-            proton.addWidget(copy)
-            location.addLayout(proton)
-        outer.addLayout(location)
+        game_layout.addLayout(path_row)
+        outer.addWidget(game)
 
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.mod_list = QListWidget()
-        self.mod_list.setAccessibleName('Available mods')
-        self.mod_list.setMinimumWidth(200)
-        self.mod_list.currentRowChanged.connect(self.select_mod)
-        splitter.addWidget(self.mod_list)
-        detail = QWidget()
-        layout = QVBoxLayout(detail)
-        layout.setContentsMargins(20, 0, 0, 0)
-        layout.setSpacing(12)
+        self.mod_header = QWidget()
+        header = QHBoxLayout(self.mod_header)
+        header.setContentsMargins(0, 0, 0, 0)
+        header.setSpacing(14)
+        self.mod_icon_label = QLabel()
+        self.mod_icon_label.setObjectName('modIcon')
+        self.mod_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mod_icon_label.setFixedSize(52, 52)
+        header.addWidget(self.mod_icon_label)
+        title_block = QVBoxLayout()
+        title_block.setSpacing(2)
         self.mod_title = text_label('Your mods', 'modTitle')
-        layout.addWidget(self.mod_title)
-        self.description = text_label('Refresh the catalogue to see available mods.')
-        layout.addWidget(self.description)
-        self.controls_label = text_label('', 'muted')
-        layout.addWidget(self.controls_label)
-        actions = QHBoxLayout()
+        title_block.addWidget(self.mod_title)
+        self.mod_status_label = text_label('Select a mod to get started', 'modStatus')
+        title_block.addWidget(self.mod_status_label)
+        header.addLayout(title_block, 1)
         self.install_button = QPushButton('Install mod')
-        self.install_button.setObjectName('primary')
+        self.install_button.setIcon(icon('download'))
         self.install_button.clicked.connect(self.install_current)
-        actions.addWidget(self.install_button)
-        self.enabled_checkbox = QCheckBox('Enabled')
+        header.addWidget(self.install_button)
+        self.enabled_checkbox = QPushButton('Disabled')
+        self.enabled_checkbox.setObjectName('activation')
+        self.enabled_checkbox.setCheckable(True)
         self.enabled_checkbox.toggled.connect(self.toggle_current)
-        actions.addWidget(self.enabled_checkbox)
-        actions.addStretch()
-        self.remove_button = QPushButton('Remove…')
-        self.remove_button.clicked.connect(self.remove_current)
-        actions.addWidget(self.remove_button)
-        self.guide_button = QPushButton('Guide')
+        header.addWidget(self.enabled_checkbox)
+        self.guide_button = QPushButton()
+        self.guide_button.setObjectName('iconAction')
+        self.guide_button.setFixedSize(38, 38)
+        self.guide_button.setIcon(icon('book'))
+        self.guide_button.setToolTip('Open mod guide')
+        self.guide_button.setAccessibleName('Open mod guide')
         self.guide_button.clicked.connect(self.open_guide)
-        actions.addWidget(self.guide_button)
-        layout.addLayout(actions)
+        header.addWidget(self.guide_button)
+        self.remove_button = QPushButton()
+        self.remove_button.setObjectName('iconAction')
+        self.remove_button.setFixedSize(38, 38)
+        self.remove_button.setIcon(icon('trash'))
+        self.remove_button.setAccessibleName('Remove mod')
+        self.remove_button.clicked.connect(self.remove_current)
+        header.addWidget(self.remove_button)
+        outer.addWidget(self.mod_header)
+        self.description = text_label('Connect the catalogue, then choose your game folder to start.', 'muted')
+        outer.addWidget(self.description)
+        self.controls_label = None
         self.tabs = QTabWidget()
         self.settings_scroll = QScrollArea()
         self.settings_scroll.setWidgetResizable(True)
-        self.tabs.addTab(self.settings_scroll, 'Settings')
+        self.keys_scroll = QScrollArea()
+        self.keys_scroll.setWidgetResizable(True)
         self.media_scroll = QScrollArea()
         self.media_scroll.setWidgetResizable(True)
+        self.tabs.addTab(self.settings_scroll, 'Settings')
         self.tabs.currentChanged.connect(lambda index: self.update_controls())
-        layout.addWidget(self.tabs, 1)
-        self.save_row = QHBoxLayout()
-        self.unsaved_label = text_label('Changes take effect after restarting the game.', 'muted')
+        outer.addWidget(self.tabs, 1)
+        self.empty_state = QWidget()
+        empty_layout = QVBoxLayout(self.empty_state)
+        empty_layout.setSpacing(12)
+        empty_layout.addStretch()
+        empty_icon = QLabel()
+        empty_icon.setPixmap(icon('package', '#595c53').pixmap(48, 48))
+        empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(empty_icon)
+        self.empty_heading = text_label('Set up your mod library', 'emptyTitle')
+        self.empty_heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(self.empty_heading)
+        setup_hint = text_label('Find your Steam game folder above.\nRefresh the catalogue to load the available mods.', 'muted')
+        setup_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(setup_hint)
+        empty_layout.addStretch()
+        outer.addWidget(self.empty_state, 1)
+
+        footer = QFrame()
+        self.detail_footer = footer
+        footer.setObjectName('detailFooter')
+        self.save_row = QHBoxLayout(footer)
+        self.save_row.setContentsMargins(0, 14, 0, 0)
+        self.unsaved_label = text_label('Restart the game after applying changes.', 'muted')
         self.save_row.addWidget(self.unsaved_label, 1)
         self.apply_footer_button = QPushButton('Use preview image')
         self.apply_footer_button.setObjectName('primary')
+        self.apply_footer_button.setIcon(icon('check'))
         self.apply_footer_button.clicked.connect(self.apply_image)
         self.apply_footer_button.hide()
         self.save_row.addWidget(self.apply_footer_button)
         self.save_button = QPushButton('Save settings')
+        self.save_button.setObjectName('primary')
+        self.save_button.setIcon(icon('check'))
         self.save_button.setShortcut('Ctrl+S')
         self.save_button.clicked.connect(self.save_settings)
         self.save_row.addWidget(self.save_button)
-        layout.addLayout(self.save_row)
-        splitter.addWidget(detail)
-        splitter.setStretchFactor(0, 0)
-        splitter.setStretchFactor(1, 1)
-        splitter.setSizes([235, 800])
-        outer.addWidget(splitter, 1)
-
+        outer.addWidget(footer)
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 0)
-        self.progress_bar.setMaximumHeight(4)
+        self.progress_bar.setMaximumHeight(3)
         self.progress_bar.hide()
         outer.addWidget(self.progress_bar)
-        self.status_label = text_label('Ready. Your images, videos and settings are kept during updates.')
+        self.status_label = text_label('Ready. Personal files are kept during updates.', 'operationStatus')
         self.status_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.status_label.setMinimumHeight(38)
+        self.status_label.setMinimumHeight(26)
         outer.addWidget(self.status_label)
-        footer = QHBoxLayout()
-        version_label = text_label(f'v{__version__}  ·  Windows / Linux', 'muted')
-        version_label.setWordWrap(False)
-        footer.addWidget(version_label)
-        footer.addStretch()
-        repo = QPushButton('GitHub')
-        repo.setFlat(True)
-        repo.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(REPOSITORY)))
-        footer.addWidget(repo)
-        outer.addLayout(footer)
+        shell.addWidget(workspace, 1)
         self.update_controls()
 
     def notice(self, message, error=False):
@@ -296,7 +379,6 @@ class Window(QMainWindow):
         self.populate()
         self.notice('Catalogue updated. Select a mod to install or configure it.')
         if self.manager is None:
-            self._detect_after_job = True
             QTimer.singleShot(100, self.detect_games)
 
     def detect_games(self):
@@ -417,15 +499,16 @@ class Window(QMainWindow):
         self._image_bytes = None
         self._image_target = None
         mod = self.current_mod
-        self.mod_title.setText(mod['name'] if mod else 'Your mods')
-        self.description.setText(mod['description'] if mod else 'Refresh the catalogue, then select a mod. Choose the game folder before installing.')
-        self.controls_label.setText('Controls: ' + mod.get('controls', '') if mod else '')
-        page = QWidget()
-        self.settings_page = page
-        form = QFormLayout(page)
-        form.setContentsMargins(16, 20, 16, 20)
-        form.setVerticalSpacing(16)
-        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        self.mod_title.setText(mod['name'] if mod else 'Your mod library')
+        self.mod_icon_label.setPixmap(mod_icon(mod or {}).pixmap(30, 30))
+        self.description.setText(mod['description'] if mod else 'Refresh the catalogue to discover mods, then choose your game folder to begin.')
+        self.settings_page = QWidget()
+        self.keys_page = QWidget()
+        preferences = QVBoxLayout(self.settings_page)
+        bindings = QVBoxLayout(self.keys_page)
+        for layout in (preferences, bindings):
+            layout.setContentsMargins(0, 10, 12, 12)
+            layout.setSpacing(0)
         defaults = {field['key']: field['default'] for field in mod.get('settings', [])} if mod else {}
         if mod and self.manager:
             try:
@@ -433,11 +516,13 @@ class Window(QMainWindow):
             except Exception as error:
                 self._settings_error = True
                 self.notice(str(error) + ' Settings were not overwritten.', True)
+        general_count = key_count = 0
         for field in mod.get('settings', []) if mod else []:
             value = defaults.get(field['key'], field['default'])
             if field['type'] == 'boolean':
-                widget = QCheckBox()
+                widget = QCheckBox('On' if value else 'Off')
                 widget.setChecked(bool(value))
+                widget.toggled.connect(lambda checked, target=widget: target.setText('On' if checked else 'Off'))
                 widget.toggled.connect(self.mark_dirty)
             elif field['type'] == 'number':
                 widget = QDoubleSpinBox()
@@ -454,19 +539,49 @@ class Window(QMainWindow):
                 widget.setCurrentText(str(value))
                 widget.currentTextChanged.connect(self.mark_dirty)
             widget.setAccessibleName(field['label'])
-            label = QLabel(field['label'])
+            widget.setToolTip('Default: ' + str(field['default']))
+            widget.setFixedWidth(200)
+            row = QWidget()
+            row.setObjectName('fieldRow')
+            row.setMinimumHeight(64)
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 11, 0, 11)
+            row_layout.setSpacing(20)
+            label = text_label(field['label'])
             label.setBuddy(widget)
-            form.addRow(label, widget)
+            row_layout.addWidget(label, 1)
+            row_layout.addWidget(widget)
+            if field['type'] == 'key':
+                bindings.addWidget(row)
+                key_count += 1
+            else:
+                preferences.addWidget(row)
+                general_count += 1
             self.settings_widgets[field['key']] = widget
-        if not self.settings_widgets:
-            form.addRow(text_label('This mod has no configurable settings.' if mod else 'No mod selected.', 'muted'))
-        self.settings_scroll.setWidget(page)
-        if self.tabs.indexOf(self.media_scroll) >= 0:
-            self.tabs.removeTab(self.tabs.indexOf(self.media_scroll))
+        if not general_count:
+            preferences.addWidget(text_label('This mod has no adjustable preferences.' if mod else 'No mod selected.', 'muted'))
+        preferences.addStretch()
+        if mod and mod.get('controls'):
+            bindings.addSpacing(20)
+            bindings.addWidget(text_label('Default controls', 'sectionTitle'))
+            bindings.addSpacing(8)
+            self.controls_label = text_label(mod['controls'], 'muted')
+            bindings.addWidget(self.controls_label)
+        else:
+            self.controls_label = text_label('', 'muted')
+        bindings.addStretch()
+        self.settings_scroll.setWidget(self.settings_page)
+        self.keys_scroll.setWidget(self.keys_page)
+        while self.tabs.count() > 1:
+            self.tabs.removeTab(1)
+        if mod and (key_count or mod.get('controls')):
+            self.tabs.addTab(self.keys_scroll, 'Keybindings')
         if mod and (mod.get('images') or mod.get('video_list')):
             self.build_media(mod)
             self.tabs.addTab(self.media_scroll, 'Images' if mod.get('images') else 'Videos')
-        self.unsaved_label.setText('Changes take effect after restarting the game.')
+        self.unsaved_label.setText('Restart the game after applying changes.')
+        self.mod_count.setText(str(self.mod_list.count()))
+        self.nav_empty.setVisible(self.mod_list.count() == 0)
         self.update_controls()
 
     def mark_dirty(self, *args):
@@ -476,22 +591,38 @@ class Window(QMainWindow):
 
     def update_controls(self):
         ready = not self._busy
+        has_mod = self.current_mod is not None
+        self.mod_header.setVisible(has_mod)
+        self.description.setVisible(has_mod)
+        self.tabs.setVisible(has_mod)
+        self.detail_footer.setVisible(has_mod)
+        self.empty_state.setVisible(not has_mod)
+        self.empty_heading.setText('Preparing your library…' if self._busy else 'Set up your mod library')
         for widget in [self.refresh_button, self.cached_button, self.browse_button, self.detect_button, self.path_edit, self.mod_list]:
             widget.setEnabled(ready)
         state = self.mod_status(self.current_mod) if self.current_mod else {'installed': False, 'enabled': False}
         installed = state['installed']
         loader = bool(self.manager and (self.manager.win64 / 'dwmapi.dll').is_file() and
                       (self.manager.win64 / 'ue4ss/UE4SS.dll').is_file())
-        self.loader_label.setText('UE4SS is installed.' if loader else
-                                  'UE4SS is required. Install it once before adding mods.' if self.manager else
-                                  'Select a game folder to check UE4SS.')
+        self.loader_label.setText('UE4SS ready' if loader else 'UE4SS required' if self.manager else 'Choose a game folder')
+        self.loader_label.setStyleSheet('color: #31633e;' if loader else '')
+        self.loader_icon.setPixmap(icon('check' if loader else 'folder', '#31633e' if loader else '#595c53').pixmap(16, 16))
         self.loader_button.setText('UE4SS ready' if loader else 'Install UE4SS')
         writable = ready and not self._state_error
         self.loader_button.setEnabled(writable and self.manager is not None and not loader)
+        self.loader_button.setVisible(self.manager is not None and not loader)
+        for button, prominent in ((self.detect_button, self.manager is None),
+                                  (self.install_button, bool(state.get('update') or not installed))):
+            if button.property('prominent') != prominent:
+                button.setProperty('prominent', prominent)
+                button.style().unpolish(button)
+                button.style().polish(button)
         self.install_button.setText('Update mod' if state.get('update') else 'Reinstall mod' if installed else 'Install mod')
         self.install_button.setEnabled(writable and loader and self.current_mod is not None and self.snapshot is not None)
         self.enabled_checkbox.blockSignals(True)
         self.enabled_checkbox.setChecked(state['enabled'])
+        self.enabled_checkbox.setText('Enabled' if state['enabled'] else 'Disabled')
+        self.enabled_checkbox.setIcon(icon('power', '#31633e' if state['enabled'] else '#595c53'))
         self.enabled_checkbox.blockSignals(False)
         self.enabled_checkbox.setEnabled(writable and installed)
         self.remove_button.setEnabled(writable and installed and state.get('managed', False))
@@ -500,12 +631,27 @@ class Window(QMainWindow):
         self.guide_button.setEnabled(ready and self.current_mod is not None)
         self.save_button.setEnabled(ready and installed and bool(self.settings_widgets) and not self._settings_error and self._dirty)
         image_tab = bool(self.current_mod and self.current_mod.get('images') and self.tabs.currentWidget() == self.media_scroll)
-        self.save_button.setVisible(self.tabs.currentWidget() == self.settings_scroll)
+        self.save_button.setVisible(self.tabs.currentWidget() in (self.settings_scroll, self.keys_scroll))
         self.apply_footer_button.setVisible(image_tab)
         self.apply_footer_button.setEnabled(ready and installed and self._image_bytes is not None)
         if hasattr(self, 'settings_page'):
             self.settings_page.setEnabled(ready and installed and not self._settings_error)
+        if hasattr(self, 'keys_page'):
+            self.keys_page.setEnabled(ready and installed and not self._settings_error)
         self.media_scroll.setEnabled(ready and installed)
+        if not self.current_mod:
+            status = 'Choose a mod from your library'
+        elif not installed:
+            status = 'Not installed'
+        elif not state.get('managed'):
+            status = 'Installed manually'
+        else:
+            status = 'Installed'
+            if state.get('version'):
+                status += ' · v' + state['version']
+            if state.get('update'):
+                status += ' · update available'
+        self.mod_status_label.setText(status)
 
     def install_current(self):
         if self.current_mod and self.allow_discard():
@@ -552,26 +698,39 @@ class Window(QMainWindow):
 
     def build_media(self, mod):
         page = QWidget()
-        layout = QVBoxLayout(page)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
         if mod.get('images'):
+            layout = QHBoxLayout(page)
+            layout.setContentsMargins(0, 12, 10, 6)
+            layout.setSpacing(22)
+            options = QWidget()
+            options.setObjectName('imageControls')
+            options.setMinimumWidth(270)
+            options.setMaximumWidth(310)
+            controls = QVBoxLayout(options)
+            controls.setContentsMargins(0, 0, 0, 0)
+            controls.setSpacing(4)
+            controls.addWidget(text_label('Replace', 'sectionTitle'))
             self.image_targets = QComboBox()
             self.image_targets.setAccessibleName('Image target')
             for target in mod['images']:
                 self.image_targets.addItem(target['label'], target)
-            layout.addWidget(self.image_targets)
+            controls.addWidget(self.image_targets)
+            controls.addWidget(text_label('Source image', 'sectionTitle'))
             source_row = QHBoxLayout()
+            source_row.setSpacing(6)
             self.image_source = QLineEdit()
             self.image_source.setReadOnly(True)
-            self.image_source.setPlaceholderText('Choose a PNG, WebP or JPEG image')
+            self.image_source.setPlaceholderText('PNG, WebP or JPEG')
             self.image_source.setAccessibleName('Source image')
             source_row.addWidget(self.image_source, 1)
-            choose = QPushButton('Choose image…')
+            choose = QPushButton('Choose…')
+            choose.setIcon(icon('folder'))
             choose.clicked.connect(self.choose_image)
             source_row.addWidget(choose)
-            layout.addLayout(source_row)
+            controls.addLayout(source_row)
             adjustments = QFormLayout()
+            adjustments.setVerticalSpacing(8)
+            adjustments.setHorizontalSpacing(12)
             self.image_scale = QDoubleSpinBox()
             self.image_scale.setRange(1, 500)
             self.image_scale.setSuffix(' %')
@@ -581,58 +740,77 @@ class Window(QMainWindow):
             self.image_x = QDoubleSpinBox()
             self.image_x.setRange(-100, 100)
             self.image_x.setSuffix(' %')
-            self.remove_green = QCheckBox('Remove green background from input')
+            self.remove_green = QCheckBox('Remove green screen')
             for label, widget in [('Size', self.image_scale), ('Top offset', self.image_top), ('Horizontal offset', self.image_x)]:
                 widget.setAccessibleName(label)
+                widget.setFixedWidth(112)
                 adjustments.addRow(label, widget)
                 widget.valueChanged.connect(self.invalidate_preview)
-            adjustments.addRow(self.remove_green)
+            controls.addLayout(adjustments)
             self.remove_green.toggled.connect(self.invalidate_preview)
-            layout.addLayout(adjustments)
+            controls.addWidget(self.remove_green)
             buttons = QHBoxLayout()
+            buttons.setSpacing(6)
             preview = QPushButton('Preview')
+            self.preview_button = preview
+            preview.setIcon(icon('eye'))
             preview.clicked.connect(self.preview_image)
             buttons.addWidget(preview)
-            self.apply_image_button = QPushButton('Use this image')
-            self.apply_image_button.clicked.connect(self.apply_image)
-            self.apply_image_button.setEnabled(False)
-            buttons.addWidget(self.apply_image_button)
-            restore = QPushButton('Restore original…')
+            restore = QPushButton('Restore')
+            self.restore_image_button = restore
+            restore.setIcon(icon('undo'))
+            restore.setToolTip('Restore the original image after backing up your replacement')
             restore.clicked.connect(lambda: self.restore_media(self.image_targets.currentData()['file']))
             buttons.addWidget(restore)
-            buttons.addStretch()
-            layout.addLayout(buttons)
-            self.preview_label = text_label('Choose an image, adjust the layout, then preview it.')
-            self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.preview_label.setMinimumHeight(120)
-            layout.addWidget(self.preview_label, 1)
+            controls.addLayout(buttons)
+            controls.addStretch()
+            layout.addWidget(options)
+            preview_area = QWidget()
+            preview_layout = QVBoxLayout(preview_area)
+            preview_layout.setContentsMargins(0, 0, 0, 0)
+            preview_layout.setSpacing(8)
+            preview_layout.addWidget(text_label('Preview', 'sectionTitle'))
+            self.preview_label = PreviewCanvas('Choose an image, then select Preview to check its layout.')
+            preview_layout.addWidget(self.preview_label, 1)
             self.image_note = text_label('', 'muted')
-            layout.addWidget(self.image_note)
+            preview_layout.addWidget(self.image_note)
+            layout.addWidget(preview_area, 1)
+            self.apply_image_button = self.apply_footer_button
+            self.apply_image_button.setEnabled(False)
             self.image_targets.currentIndexChanged.connect(self.image_target_changed)
             self.image_target_changed()
-        elif mod.get('video_list'):
+        else:
             from .media import video_targets
+            layout = QVBoxLayout(page)
+            layout.setContentsMargins(0, 22, 12, 14)
+            layout.setSpacing(14)
             key = 'Mods/' + mod['id'] + '/' + mod['video_list']
             targets = video_targets(self.snapshot.files[key])
-            layout.addWidget(text_label('Choose which game video to replace. The original duration and format are listed in the mod guide.'))
+            layout.addWidget(text_label('Replace a game video', 'sectionTitle'))
+            layout.addWidget(text_label('Choose the original clip, then import your replacement MP4.', 'muted'))
             self.video_choice = QComboBox()
             self.video_choice.setAccessibleName('Video to replace')
             self.video_choice.addItems(targets)
             self.video_choice.setMinimumContentsLength(18)
             self.video_choice.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
             layout.addWidget(self.video_choice)
-            layout.addWidget(text_label('Most Fam videos use H.264 MP4, 2560×1440 at 24 fps, with a green background. Match the selected original; event and logo videos differ.', 'muted'))
             buttons = QHBoxLayout()
             import_button = QPushButton('Import replacement MP4…')
+            import_button.setObjectName('primary')
+            import_button.setIcon(icon('folder'))
             import_button.clicked.connect(self.import_video)
             buttons.addWidget(import_button)
             restore = QPushButton('Restore original…')
+            restore.setIcon(icon('undo'))
             restore.clicked.connect(lambda: self.restore_media(mod['video_folder'] + '/' + self.video_choice.currentText()))
             buttons.addWidget(restore)
             buttons.addStretch()
             layout.addLayout(buttons)
-            layout.addWidget(text_label('Files are copied into MovieSwap; your source file is kept. Restart after restoring an original video.', 'muted'))
+            layout.addSpacing(10)
+            layout.addWidget(text_label('Match the original format', 'sectionTitle'))
+            layout.addWidget(text_label('Most Fam videos use H.264 MP4, 2560×1440 at 24 fps, with a green background. Event and logo videos differ; see the mod guide for the selected clip.', 'muted'))
             layout.addStretch()
+            layout.addWidget(text_label('Your source file is kept. Restart after restoring an original video.', 'muted'))
         self.media_scroll.setWidget(page)
 
     def image_target_changed(self, *args):
@@ -675,11 +853,9 @@ class Window(QMainWindow):
             if not pixmap.loadFromData(data, 'PNG'):
                 raise ValueError('The preview could not be opened.')
             self.preview_label.setText('')
-            self.preview_label.setPixmap(pixmap.scaled(430, 250, Qt.AspectRatioMode.KeepAspectRatio,
-                                                      Qt.TransformationMode.SmoothTransformation))
-            self.apply_image_button.setEnabled(True)
+            self.preview_label.setPixmap(pixmap)
+            self.update_controls()
             self.notice('Preview ready. Use this image to save it to the installed mod.')
-            QTimer.singleShot(0, lambda: self.media_scroll.verticalScrollBar().setValue(self.media_scroll.verticalScrollBar().maximum()))
         self.run_job('Preparing image preview…', lambda progress: compose_image(*arguments), ready)
 
     def apply_image(self):
@@ -720,38 +896,3 @@ class Window(QMainWindow):
             event.accept()
         else:
             event.ignore()
-
-
-STYLE = '''
-QWidget { font-size: 10pt; color: #252620; }
-QMainWindow { background: #f4f3ef; }
-QLabel#appTitle { font-size: 20pt; font-weight: 600; }
-QLabel#modTitle { font-size: 22pt; font-weight: 600; }
-QLabel#sectionTitle { font-weight: 600; }
-QLabel#muted { color: #595c53; font-size: 9pt; }
-QPushButton { min-height: 24px; padding: 5px 12px; border: 1px solid #b8bdb0; border-radius: 5px; background: #ffffff; }
-QPushButton:hover { background: #eeeee7; }
-QPushButton:pressed { background: #dfdfd6; }
-QPushButton:focus, QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 2px solid #8a5c0d; }
-QPushButton#primary { background: #e8af42; border-color: #be882b; font-weight: 600; }
-QPushButton#primary:hover { background: #efbf65; }
-QPushButton:disabled { color: #73766d; background: #e6e6df; border-color: #d0d3c8; }
-QLineEdit, QComboBox, QDoubleSpinBox { min-height: 26px; padding: 3px 8px; background: #ffffff; border: 1px solid #b8bdb0; border-radius: 4px; }
-QListWidget { background: #f4f3ef; border: 0; outline: 0; }
-QListWidget::item { padding: 16px 12px; margin-bottom: 4px; border: 1px solid transparent; border-radius: 5px; }
-QListWidget::item:selected { background: #f5e9cf; color: #252620; border: 1px solid #be882b; }
-QListWidget::item:hover:!selected { background: #e9eae2; }
-QScrollArea { border: 1px solid #d9dcd3; border-radius: 5px; background: #ffffff; }
-QScrollArea > QWidget > QWidget { background: #ffffff; }
-QTabWidget::pane { border: 0; }
-QTabBar::tab { padding: 9px 16px; background: #e9eae2; border: 0; margin-right: 3px; }
-QTabBar::tab:selected { background: #ffffff; font-weight: 600; }
-QProgressBar { border: 0; background: #dedfd6; }
-QProgressBar::chunk { background: #a76d0f; }
-QCheckBox { spacing: 8px; }
-QSplitter::handle { background: #d9dcd3; width: 1px; }
-QScrollBar:vertical { background: #efefe9; width: 10px; margin: 0; }
-QScrollBar::handle:vertical { background: #a7ad9f; min-height: 24px; border-radius: 4px; }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
-'''

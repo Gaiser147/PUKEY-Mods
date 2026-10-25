@@ -14,9 +14,9 @@ On Linux, the executable may need permission to run: `chmod +x PUKEY-Mod-Manager
 2. Let **Find in Steam** locate the game, or use **Browse**. You can select the game root, its `PUKEY_GODDESS_SHOT_TRICK` directory, or `Binaries/Win64`.
 3. Close the game. If UE4SS is missing, choose **Install UE4SS** to download it from its official experimental release. The manager disables the three incompatible example mods through configuration and activation markers.
 4. Select a mod and choose **Install mod**. Repeat for whichever mods you want.
-5. Adjust its settings and choose **Save settings**. Restart the game after changing scripts, settings, activation, or removing replacement media.
+5. Adjust preferences under **Settings** or shortcuts under **Keybindings**, then choose **Save settings**. Both views share the same configuration. Restart the game after changing scripts, settings, activation, or removing replacement media.
 
-On Linux/Proton, use **Copy launch option**, then paste the DLL override into the game's Steam launch options:
+On Linux/Proton, use **Copy Proton launch option**, then paste the DLL override into the game's Steam launch options:
 
 ```bash
 WINEDLLOVERRIDES="dwmapi.dll=n,b" %command%
@@ -26,7 +26,7 @@ The manager does not edit Steam's launch options itself. Flatpak Steam installat
 
 ## Images and videos
 
-**FamSwap → Images:** choose bar or table, select an image, adjust size/offsets and optional green-screen removal, then **Preview → Use this image**. Composition uses Pillow on both platforms. Restore original removes the selected custom PNG after backing it up; restart to completely restore previously changed surfaces. A manually installed `bar.jpg` or `game.jpg` can still be used by FamSwap if its PNG is absent, so remove/rename that fallback separately if needed.
+**FamSwap → Images:** choose bar or table, select an image, adjust size/offsets and optional green-screen removal, then **Preview → Use preview image**. Controls and a resizing transparency preview sit side by side; the apply action stays in the footer. Composition uses Pillow on both platforms. **Restore** removes the selected custom PNG after backing it up; restart to completely restore previously changed surfaces. A manually installed `bar.jpg` or `game.jpg` can still be used by FamSwap if its PNG is absent, so remove/rename that fallback separately if needed.
 
 **MovieSwap → Videos:** choose the original video path, then import your replacement MP4. Match its original codec, frame rate, dimensions, and duration as described in [the mod guide](../Mods/MovieSwap/README.md). Imports are limited to 32 MB per file in this initial GUI. The manager copies the file and preserves your source. Use **Restore original** and restart to undo a replacement. Disable FamSwap's table image or select its `idle` mode to see the videos.
 

@@ -21,11 +21,17 @@ def main():
     from PySide6.QtWidgets import QApplication
     from .catalog import Snapshot
     from .gui import Window
+    if arguments.smoke_test:
+        from PySide6.QtGui import QPixmap
 
     app = QApplication(sys.argv[:1])
     app.setOrganizationName('PUKEYMods')
     app.setApplicationName('ModManager')
     app.setStyle('Fusion')
+    if arguments.smoke_test:
+        for name in ('chevron-down.svg', 'chevron-up.svg', 'check.svg'):
+            if QPixmap(str(Path(__file__).resolve().parent / 'assets' / name)).isNull():
+                raise RuntimeError('Required interface asset could not be loaded: ' + name)
     temporary = tempfile.TemporaryDirectory(prefix='pukey-smoke-') if arguments.smoke_test or arguments.screenshot else None
     snapshot = Snapshot.from_directory(arguments.source) if arguments.source else None
     if snapshot is None and arguments.smoke_test:

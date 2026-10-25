@@ -1,338 +1,88 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-24T22:33:17.501887+00:00",
+  "generatedAt": "2026-10-24T23:24:57.7839737Z",
   "title": "Design System: PUKEY Mod Manager",
   "extensions": {
     "colorMeta": {
-      "primary": {
-        "role": "primary",
-        "displayName": "Primary",
-        "canonical": "#e8af42"
-      },
-      "primary-hover": {
-        "role": "primary",
-        "displayName": "Primary hover",
-        "canonical": "#efbf65"
-      },
-      "primary-border": {
-        "role": "primary",
-        "displayName": "Primary border",
-        "canonical": "#be882b"
-      },
-      "focus": {
-        "role": "primary",
-        "displayName": "Focus",
-        "canonical": "#8a5c0d"
-      },
-      "background": {
-        "role": "neutral",
-        "displayName": "Background",
-        "canonical": "#f4f3ef"
-      },
-      "panel": {
-        "role": "neutral",
-        "displayName": "Panel",
-        "canonical": "#ffffff"
-      },
-      "text": {
-        "role": "neutral",
-        "displayName": "Text",
-        "canonical": "#252620"
-      },
-      "secondary-text": {
-        "role": "neutral",
-        "displayName": "Secondary text",
-        "canonical": "#595c53"
-      },
-      "border": {
-        "role": "neutral",
-        "displayName": "Border",
-        "canonical": "#d9dcd3"
-      },
-      "control-border": {
-        "role": "neutral",
-        "displayName": "Control border",
-        "canonical": "#b8bdb0"
-      },
-      "selection": {
-        "role": "primary",
-        "displayName": "Selection",
-        "canonical": "#f5e9cf"
-      },
-      "control-hover": {
-        "role": "neutral",
-        "displayName": "Control hover",
-        "canonical": "#eeeee7"
-      },
-      "control-pressed": {
-        "role": "neutral",
-        "displayName": "Control pressed",
-        "canonical": "#dfdfd6"
-      },
-      "navigation-hover": {
-        "role": "neutral",
-        "displayName": "Navigation hover",
-        "canonical": "#e9eae2"
-      },
-      "disabled-text": {
-        "role": "neutral",
-        "displayName": "Disabled text",
-        "canonical": "#73766d"
-      },
-      "disabled-background": {
-        "role": "neutral",
-        "displayName": "Disabled background",
-        "canonical": "#e6e6df"
-      },
-      "disabled-border": {
-        "role": "neutral",
-        "displayName": "Disabled border",
-        "canonical": "#d0d3c8"
-      },
-      "error": {
-        "role": "error",
-        "displayName": "Error",
-        "canonical": "#a52b2b"
-      },
-      "progress-track": {
-        "role": "neutral",
-        "displayName": "Progress track",
-        "canonical": "#dedfd6"
-      },
-      "progress-fill": {
-        "role": "primary",
-        "displayName": "Progress fill",
-        "canonical": "#a76d0f"
-      },
-      "scrollbar-track": {
-        "role": "neutral",
-        "displayName": "Scrollbar track",
-        "canonical": "#efefe9"
-      },
-      "scrollbar-thumb": {
-        "role": "neutral",
-        "displayName": "Scrollbar thumb",
-        "canonical": "#a7ad9f"
-      }
+      "primary": {"role": "primary", "displayName": "Warm amber", "canonical": "#e8af42"},
+      "ink": {"role": "neutral", "displayName": "Charcoal ink / sidebar", "canonical": "#252620"},
+      "workspace": {"role": "neutral", "displayName": "White workspace", "canonical": "#ffffff"},
+      "warm-surface": {"role": "neutral", "displayName": "Warm gray surface", "canonical": "#f4f3ef"},
+      "success": {"role": "success", "displayName": "Ready green", "canonical": "#31633e"},
+      "error": {"role": "error", "displayName": "Error red", "canonical": "#a52b2b"}
     },
     "typographyMeta": {
-      "headline": {
-        "displayName": "Application headline",
-        "purpose": "Application title."
-      },
-      "title": {
-        "displayName": "Selected mod title",
-        "purpose": "Selected mod heading."
-      },
-      "body": {
-        "displayName": "Desktop body",
-        "purpose": "Descriptions, controls, labels and buttons."
-      },
-      "label": {
-        "displayName": "Semibold label",
-        "purpose": "Section labels and primary actions."
-      },
-      "supporting": {
-        "displayName": "Supporting text",
-        "purpose": "Control summaries, source state, restart guidance and footer."
-      }
+      "title": {"displayName": "Selected mod", "purpose": "Strongest workspace heading."},
+      "body": {"displayName": "Desktop body", "purpose": "Labels, controls, and descriptions."},
+      "small": {"displayName": "Small supporting text", "purpose": "Navigation state, source, version, and operation status."}
     },
-    "shadows": [],
-    "motion": [],
-    "breakpoints": [],
+    "shadows": [], "motion": [], "breakpoints": [],
     "nativeQt": {
-      "platform": "desktop",
-      "operatingSystems": [
-        "Windows",
-        "Linux"
-      ],
+      "platform": "native-desktop", "operatingSystems": ["Windows", "Linux"],
+      "runtimeCompatibility": "Visual checks do not establish gameplay or Linux runtime compatibility.",
       "toolkit": "PySide6.QtWidgets",
-      "source": "manager/gui.py",
+      "sources": ["manager/theme.py", "manager/widgets.py", "manager/gui.py", "manager/assets/"],
       "primitiveSource": "DESIGN.md YAML frontmatter",
-      "dimensionUnit": "Qt logical pixel",
-      "fontUnit": "point",
-      "fontPolicy": "Qt application font; use desktop settings. Offscreen fallback only: Segoe UI on Windows or DejaVu Sans on Linux when no fonts are registered.",
+      "dimensionUnit": "Qt logical pixel", "fontUnit": "point",
+      "fontPolicy": "Qt application font; platform metrics. Offscreen fallback is test support only.",
       "windowTokens": {
-        "initial": {
-          "width": 1120,
-          "height": 800
-        },
-        "minimum": {
-          "width": 900,
-          "height": 640
-        },
-        "screenshotChecks": [
-          {
-            "width": 1120,
-            "height": 800
-          },
-          {
-            "width": 1024,
-            "height": 768
-          }
-        ],
-        "navigationMinimumWidth": 200,
-        "splitterInitialSizes": [
-          235,
-          800
-        ],
-        "splitterHandleWidth": 1
+        "initial": [1120, 800], "minimum": [900, 640], "visualChecks": [[1120, 800], [1024, 768]],
+        "sidebarFixedWidth": 236, "splitter": false
       },
       "layoutTokens": {
-        "outerMargins": {
-          "left": 24,
-          "top": 20,
-          "right": 24,
-          "bottom": 16
-        },
-        "outerSpacing": 16,
-        "locationSpacing": 8,
-        "detailMargins": {
-          "left": 20,
-          "top": 0,
-          "right": 0,
-          "bottom": 0
-        },
-        "detailSpacing": 12,
-        "formMargins": {
-          "left": 16,
-          "top": 20,
-          "right": 16,
-          "bottom": 20
-        },
-        "formVerticalSpacing": 16,
-        "formFieldGrowthPolicy": "QFormLayout.ExpandingFieldsGrow",
-        "mediaMargins": {
-          "left": 16,
-          "top": 16,
-          "right": 16,
-          "bottom": 16
-        },
-        "mediaSpacing": 12,
-        "tabGap": 3,
-        "navigationRowGap": 4,
-        "checkboxSpacing": 8
+        "sidebarMarginsLTRB": [12, 26, 12, 18], "sidebarSpacing": 12,
+        "workspaceMarginsLTRB": [28, 24, 28, 12], "workspaceSpacing": 18,
+        "gamePanelMarginsLTRB": [14, 11, 14, 12], "gamePanelSpacing": 8,
+        "modHeaderSpacing": 14, "modIconSize": [52, 52], "iconActionSize": [38, 38],
+        "formMarginsLTRB": [0, 10, 12, 12], "formSpacing": 0,
+        "fieldRowMinimumHeight": 64, "fieldRowMarginsLTRB": [0, 11, 0, 11], "fieldRowSpacing": 20, "fieldWidth": 200,
+        "imageMarginsLTRB": [0, 12, 10, 6], "imageColumnGap": 22, "imageOptionsWidthRange": [270, 310],
+        "imageControlSpacing": 4, "imageAdjustmentWidth": 112,
+        "footerMarginsLTRB": [0, 14, 0, 0], "statusMinimumHeight": 26, "progressMaximumHeight": 3
       },
       "controlTokens": {
-        "buttonQssMinimumHeight": 24,
-        "fieldQssMinimumHeight": 26,
-        "heightMeasurement": "QSS min-height excludes padding and border contribution.",
-        "borderWidth": 1,
-        "focusBorderWidth": 2,
-        "focusColorReference": "{colors.focus}",
-        "focusWidgets": [
-          "QPushButton",
-          "QLineEdit",
-          "QComboBox",
-          "QDoubleSpinBox"
-        ],
-        "statusMinimumHeight": 38,
-        "progressMaximumHeight": 4,
-        "imagePreviewMinimumHeight": 120,
-        "scrollbarWidth": 10,
-        "scrollbarThumbMinimumHeight": 24,
-        "videoComboMinimumContentsLength": 18
+        "buttonMinimumHeight": 28, "fieldMinimumHeight": 28, "imageFieldMinimumHeight": 24,
+        "imageFieldPadding": "3px 8px", "borderWidth": 1, "focusBorderWidth": 2,
+        "tabUnderlineWidth": 2, "tabRightMargin": 12,
+        "checkboxIndicatorSize": [17, 17], "scrollbarWidth": 8, "scrollbarThumbMinimumHeight": 26,
+        "navigationRowSizeHint": [224, 76], "navigationRowInsetsLTRB": [8, 3, 8, 3],
+        "navigationFocus": "Inset dashed outline: focus token when selected, sidebar-muted otherwise.",
+        "sidebarActionFocus": "2px solid {colors.primary}"
       },
-      "componentStyles": {
-        "Primary button": "QPushButton { min-height: 24px; padding: 5px 12px; border: 1px solid #b8bdb0; border-radius: 5px; background: #ffffff; }\nQPushButton:focus, QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 2px solid #8a5c0d; }\nQPushButton#primary { background: #e8af42; border-color: #be882b; font-weight: 600; }\nQPushButton#primary:hover { background: #efbf65; }\nQPushButton:disabled { color: #73766d; background: #e6e6df; border-color: #d0d3c8; }",
-        "Secondary button": "QPushButton { min-height: 24px; padding: 5px 12px; border: 1px solid #b8bdb0; border-radius: 5px; background: #ffffff; }\nQPushButton:hover { background: #eeeee7; }\nQPushButton:pressed { background: #dfdfd6; }\nQPushButton:focus, QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 2px solid #8a5c0d; }\nQPushButton:disabled { color: #73766d; background: #e6e6df; border-color: #d0d3c8; }",
-        "Native field": "QPushButton:focus, QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 2px solid #8a5c0d; }\nQLineEdit, QComboBox, QDoubleSpinBox { min-height: 26px; padding: 3px 8px; background: #ffffff; border: 1px solid #b8bdb0; border-radius: 4px; }",
-        "Mod navigation": "QListWidget { background: #f4f3ef; border: 0; outline: 0; }\nQListWidget::item { padding: 16px 12px; margin-bottom: 4px; border: 1px solid transparent; border-radius: 5px; }\nQListWidget::item:selected { background: #f5e9cf; color: #252620; border: 1px solid #be882b; }\nQListWidget::item:hover:!selected { background: #e9eae2; }",
-        "Scrolling content panel": "QScrollArea { border: 1px solid #d9dcd3; border-radius: 5px; background: #ffffff; }\nQScrollArea > QWidget > QWidget { background: #ffffff; }",
-        "Content tabs": "QTabWidget::pane { border: 0; }\nQTabBar::tab { padding: 9px 16px; background: #e9eae2; border: 0; margin-right: 3px; }\nQTabBar::tab:selected { background: #ffffff; font-weight: 600; }",
-        "Progress indicator": "QProgressBar { border: 0; background: #dedfd6; }\nQProgressBar::chunk { background: #a76d0f; }"
+      "previewTokens": {
+        "widget": "PreviewCanvas", "minimum": [160, 220], "sizeHint": [300, 260],
+        "imageInset": 14, "checkerboardCell": 12, "checkerboardColors": ["{colors.workspace}", "{colors.border}"],
+        "scaling": "KeepAspectRatio with SmoothTransformation", "canvasColor": "{colors.warm-surface}"
       },
-      "statusErrorQss": "color: #a52b2b;",
-      "nativeBehavior": {
-        "checkboxes": "Use native indicator and keyboard behavior.",
-        "dialogs": "Native Qt file selection and confirmation dialogs.",
-        "shortcuts": {
-          "browse": "Ctrl+O",
-          "refresh": "Ctrl+R",
-          "save": "Ctrl+S"
-        },
-        "wordWrapping": "Descriptions and status wrap; application title and version footer stay on one line.",
-        "scrolling": "Settings/media scroll; action header, save/apply footer and status stay outside.",
+      "components": [
+        {"name": "Primary action", "widget": "QPushButton", "refersTo": "button-primary", "state": "Prominent for install/update, game discovery before setup, and save/apply; lighter hover, muted disabled, visible focus."},
+        {"name": "Secondary action", "widget": "QPushButton", "refersTo": "button-secondary", "state": "Neutral hover and pressed fills; Enabled/Disabled activation uses green checked text/border."},
+        {"name": "Native field", "widgets": ["QLineEdit", "QComboBox", "QDoubleSpinBox"], "refersTo": "field", "state": "Deep amber focus; disabled warm surface; SVG combo/spin arrows."},
+        {"name": "Library navigation", "widget": "QListWidget + ModDelegate", "refersTo": "navigation-selected", "state": "Amber selected row, charcoal hover, icon/name/status, inset dashed keyboard focus."},
+        {"name": "Game location", "widget": "QFrame#gamePanel", "refersTo": "game-panel", "state": "Game path, browse/discovery actions, explicit loader state."},
+        {"name": "Content tabs", "widget": "QTabWidget", "refersTo": "tab", "state": "Settings; conditional Keybindings and Images/Videos. Selected amber underline; hover warm surface."},
+        {"name": "Image preparation", "widget": "PreviewCanvas beside imageControls", "state": "Labelled empty canvas; transparency checkerboard; footer apply requires current valid preview."}
+      ],
+      "assets": {"paintedIcons": "24px line icons, 1.7px rounded strokes, rendered at device pixel ratio 2", "svg": ["check.svg", "chevron-down.svg", "chevron-up.svg"]},
+      "behavior": {
+        "shortcuts": {"browse": "Ctrl+O", "refresh": "Ctrl+R", "save": "Ctrl+S"},
+        "scrolling": "Forms/media scroll while the mod header, save/apply footer, progress, and operation status persist.",
+        "accessibility": "Label buddies, accessible names, text states, native keyboard behavior, and visible focus.",
         "progress": "Qt indeterminate progress animation; no custom motion tokens."
       },
-      "previewFormat": "Native QSS and widget metadata; no HTML/CSS component replicas."
+      "previewFormat": "Native widget metadata and source-backed tokens; no HTML/CSS replicas or fabricated web/iOS platform declaration."
     }
   },
-  "components": [
-    {
-      "name": "Primary button",
-      "kind": "button",
-      "description": "Amber install and footer image-apply actions.",
-      "refersTo": "button-primary"
-    },
-    {
-      "name": "Secondary button",
-      "kind": "button",
-      "description": "Native desktop actions with neutral hover and pressed states.",
-      "refersTo": "button-secondary"
-    },
-    {
-      "name": "Native field",
-      "kind": "input",
-      "description": "Line edits, combo boxes and numeric controls share the field treatment.",
-      "refersTo": "field"
-    },
-    {
-      "name": "Mod navigation",
-      "kind": "nav",
-      "description": "Keyboard-selectable mod rows show name and installation state.",
-      "refersTo": "navigation-item-selected"
-    },
-    {
-      "name": "Scrolling content panel",
-      "kind": "custom",
-      "description": "White settings and media content inside a subtle boundary.",
-      "refersTo": "scroll-panel"
-    },
-    {
-      "name": "Content tabs",
-      "kind": "nav",
-      "description": "Settings and capability-dependent media tabs.",
-      "refersTo": "tab"
-    },
-    {
-      "name": "Progress indicator",
-      "kind": "custom",
-      "description": "A four-pixel indeterminate bar appears during worker operations."
-    }
-  ],
+  "components": [],
   "narrative": {
     "northStar": "The clear desktop workbench",
-    "overview": "A quiet, practical workspace keeps attention on the selected mod, its real installation state, and the next available action. Warm amber identifies actions and selection; pale neutral surfaces support long file paths and labelled settings. English copy uses familiar desktop verbs.\n\nThis document records the implemented PySide6/Qt Widgets interface in `manager/gui.py`. The application runs on Windows and Linux desktops and retains native Qt keyboard, dialog, and control behavior. The YAML tokens describe existing QSS values; pixels are Qt logical pixels and typography uses points. The sidecar records native geometry and QSS details that the frontmatter cannot express.",
-    "keyCharacteristics": [
-      "Flat light surfaces with warm amber emphasis.",
-      "A persistent game location above mod navigation and details.",
-      "Native labelled controls, visible focus, and explicit state text.",
-      "Scrolling settings and media with persistent main actions and feedback."
-    ],
+    "overview": "A charcoal library rail anchors a white workspace. Warm amber gives selection and available primary actions a clear visual identity; compact, labelled native controls keep attention on the selected mod and its actual state. English copy uses familiar desktop verbs.",
+    "keyCharacteristics": ["Persistent charcoal navigation with amber selection.", "A compact game panel and selected-mod actions above scrolling content.", "Separate preferences, keybindings, and capability-dependent media preparation.", "Visible keyboard focus and persistent save/apply feedback."],
     "rules": [
-      {
-        "name": "Visible State",
-        "body": "Pair color with text, selection, focus, or a native control state so the user can identify what changed.",
-        "section": "colors"
-      },
-      {
-        "name": "Persistent Action",
-        "body": "Keep saving and applying a prepared image accessible when settings or media content scrolls.",
-        "section": "layout"
-      }
+      {"name": "Visible State", "body": "Pair color with explicit text, selection, focus, or control state.", "section": "colors"},
+      {"name": "Persistent Action", "body": "Keep saving and applying a prepared image accessible while content scrolls.", "section": "layout"}
     ],
-    "dos": [
-      "**Do** use the recorded Qt tokens and native widget behavior when extending the manager.",
-      "**Do** keep paths, setting labels, installation state, and recovery text readable at the documented desktop sizes.",
-      "**Do** preserve visible focus, label associations, accessible names, and keyboard shortcuts.",
-      "**Do** keep progress, restart guidance, and save/apply actions outside scrolling form content."
-    ],
-    "donts": [
-      "**Don't** add decorative cards, gradients, or invented status metrics to this practical workspace.",
-      "**Don't** substitute color alone for installed, enabled, busy, error, or unsaved state text.",
-      "**Don't** introduce web breakpoints, mobile navigation, or fixed cross-platform font assumptions into the native desktop specification.",
-      "**Don't** describe unimplemented colors, shadows, animations, or component states as existing design tokens."
-    ]
+    "dos": ["**Do** reuse the source-backed Qt tokens, line-icon family, and native keyboard behavior.", "**Do** keep installation, enabled, unsaved, and error states explicit in text.", "**Do** preserve readable paths, labelled controls, persistent actions, and visible focus at checked desktop sizes."],
+    "donts": ["**Don't** describe web breakpoints, iOS components, or HTML replicas as implemented native UI.", "**Don't** infer gameplay or Linux runtime compatibility from visual and offscreen checks."]
   }
 }

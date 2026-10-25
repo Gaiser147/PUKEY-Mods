@@ -1,5 +1,6 @@
 """Build a self-contained manager on the current OS (Python 3.10+)."""
 import importlib.metadata
+import os
 from pathlib import Path
 import platform
 import shutil
@@ -20,6 +21,7 @@ def main():
         '--workpath', str(root / 'build/manager'), '--specpath', str(root / 'build'),
         '--copy-metadata', 'PySide6-Essentials', '--copy-metadata', 'shiboken6',
         '--copy-metadata', 'Pillow', '--copy-metadata', 'psutil',
+        '--add-data', str(root / 'manager/assets') + os.pathsep + 'manager/assets',
         str(root / 'manager_launcher.py'),
     ], cwd=root, check=True)
     output = root / 'dist/manager' / name

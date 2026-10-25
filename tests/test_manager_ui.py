@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 try:
     from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox
@@ -31,6 +32,59 @@ class ManagerUiTests(unittest.TestCase):
         window = self.make_window()
         self.assertFalse(window.install_button.isEnabled())
         self.assertTrue(window.refresh_button.isEnabled())
+
+    def test_first_run_shows_setup_instead_of_an_inactive_editor(self):
+        window = self.make_window()
+        self.assertFalse(window.empty_state.isHidden())
+        self.assertTrue(window.tabs.isHidden())
+        self.assertTrue(window.detail_footer.isHidden())
+
+    def test_image_preparation_actions_fit_the_small_desktop_view(self):
+        from manager.catalog import Snapshot
+        snapshot = Snapshot.from_directory(Path(__file__).resolve().parents[1])
+        with patch('manager.gui.sys.platform', 'linux'):
+            window = self.make_window(snapshot)
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': mod['version']},
+            settings=lambda mod: {field['key']: field['default'] for field in mod.get('settings', [])})
+        window.mod_list.setCurrentRow(2)
+        window.tabs.setCurrentWidget(window.media_scroll)
+        window.resize(1024, 768)
+        window.show()
+        QTest.qWait(30)
+        viewport = window.media_scroll.viewport()
+        for button in (window.preview_button, window.restore_image_button):
+            self.assertTrue(viewport.rect().contains(button.mapTo(viewport, button.rect().topLeft())))
+            self.assertTrue(viewport.rect().contains(button.mapTo(viewport, button.rect().bottomRight())))
+
+    def test_keybindings_have_their_own_view_and_share_save_state(self):
+        mod = {'id': 'Example', 'name': 'Example', 'version': '1.0', 'description': '', 'controls': 'F5: toggle',
+               'settings': [{'key': 'Speed', 'label': 'Speed', 'type': 'number', 'default': 20,
+                             'min': 1, 'max': 100, 'step': 1},
+                            {'key': 'ToggleKey', 'label': 'Toggle', 'type': 'key', 'default': 'F5'}]}
+        window = self.make_window(SimpleNamespace(mods=[mod], files={}, revision='test'))
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': '1.0'},
+            settings=lambda mod: {'Speed': 20, 'ToggleKey': 'F5'})
+        window.render_details()
+        self.assertGreaterEqual(window.tabs.indexOf(window.keys_scroll), 0)
+        self.assertTrue(window.keys_scroll.isAncestorOf(window.settings_widgets['ToggleKey']))
+        self.assertTrue(window.settings_scroll.isAncestorOf(window.settings_widgets['Speed']))
+        window.tabs.setCurrentWidget(window.keys_scroll)
+        window.settings_widgets['ToggleKey'].setCurrentText('F6')
+        self.assertTrue(window.save_button.isEnabled())
+        self.assertFalse(window.save_button.isHidden())
+        window._dirty = False
+
+    def test_selected_mod_header_exposes_installation_state(self):
+        mod = {'id': 'Example', 'name': 'Example', 'version': '1.1', 'description': '', 'controls': '', 'settings': []}
+        window = self.make_window(SimpleNamespace(mods=[mod], files={}, revision='test'))
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': '1.1'},
+            settings=lambda mod: {})
+        window.render_details()
+        self.assertIn('1.1', window.mod_status_label.text())
+        self.assertIn('Installed', window.mod_status_label.text())
 
     def test_new_catalogue_mod_generates_settings_without_ui_changes(self):
         mod = {'id': 'FutureMod', 'name': 'Future Mod', 'version': '1.0',
