@@ -32,12 +32,12 @@ The manager does not edit Steam's launch options itself. Flatpak Steam installat
 
 ## Updates, activation, and removal
 
-- **Refresh mods** obtains a new immutable snapshot from the fixed repository. Update availability checks payload contents as well as catalogue versions.
+- **Refresh catalogue** obtains a new immutable snapshot from the fixed repository. Update availability checks payload contents as well as catalogue versions.
 - **Update/Reinstall** replaces declared program files. Settings, images, videos, bookmarks, and unknown files remain. Previous contents are backed up.
 - **Enabled** changes the loader's matching activation entries and marker consistently.
 - **Remove** deletes only manager-tracked, unchanged program files and disables the mod. Personal files remain. If a tracked file was edited, it remains too.
 - Manually installed mods can be adopted using **Reinstall/Update**; originals are backed up. The removal button is available after adoption so that unknown files are not accidentally deleted.
-- **Use cached** explicitly opens the last successfully downloaded and validated catalogue when offline. A first run needs a successful network download.
+- **Use offline copy** explicitly opens the last successfully downloaded and validated catalogue when offline. A first run needs a successful network download.
 
 Settings are written to `ue4ss/Mods/<Name>/settings.json` and `settings.lua`; the latter is optionally loaded by the mod. Manager ownership data and backups are under `ue4ss/.pukey-manager/`. Keep backups if you may need to restore local script edits. Interrupted operations attempt rollback; an incomplete rollback reports the backup location. The manager does not uninstall UE4SS as a whole or delete saves.
 
