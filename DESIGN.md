@@ -52,6 +52,8 @@ components:
 
 The user-selected Design C brings PUKEY's dialogue language into an editable native desktop workbench: smoky black sheets, a mint selection ribbon, pink primary actions, and off-white ornamental headings. Neutral body type keeps settings, paths, and installation state readable. The approved Qt study is the visual authority; current implementation is recorded in `manager/theme.py`, `manager/widgets.py`, and `manager/gui.py`.
 
+The game-derived identity activates only after the selected supported game supplies its seven verified images. No original PNG is bundled. Extraction runs in a worker into a versioned per-install cache; missing, removed, damaged or unsupported installations use plain native panels, a text wordmark and flat native selection/actions. The layout, editable controls and separately licensed fonts remain available. Cache images are never treated as installation proof.
+
 **Key Characteristics:**
 - Horizontal mod navigation above textured dialogue sheets.
 - Independently scrolling settings and editable keybindings, sharing one save action.
@@ -69,10 +71,6 @@ The user-selected Design C brings PUKEY's dialogue language into an editable nat
 ## Typography
 
 Amarante supplies the brand, selected-mod title, empty-state heading, and key-sheet heading. Oswald supplies horizontal navigation, tabs, section labels, primary actions, and mint key values. Segoe UI, falling back to DejaVu Sans, supplies body text and ordinary controls. Both display fonts are bundled OFL fonts; do not use them for long descriptions or paths. Sizes in the frontmatter are Qt points, not CSS pixels. Preserve plain-text labels and wrapping for descriptions and messages.
-
-## Runtime artwork
-
-The approved game-derived C identity activates only after the selected supported game supplies its seven verified images. No original PNG is bundled. Extraction runs in a worker into a versioned per-install cache; missing, removed, damaged or unsupported installations use plain native panels, a text wordmark and flat native selection/actions. The layout, editable controls and separately licensed fonts remain available. Cache images are never treated as installation proof.
 
 ## Layout
 
