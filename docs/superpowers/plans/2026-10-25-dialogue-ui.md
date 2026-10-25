@@ -23,7 +23,7 @@ Future catalogue entries remain reachable by keyboard and horizontal scrolling. 
 - [x] Run the complete suite, source smoke and one screenshot batch covering both desktop sizes, installed/empty/media/error states and Linux-specific controls; fix material issues in one batch.
 - [x] Review against the approved C comp with a fresh Impeccable reviewer, confirm fixes and document the shipped tokens.
 - [x] Build and start-test a standalone Windows preview; provide the local bundle with updated instructions and attribution.
-- [ ] Resolve asset publication scope, then run Windows/Linux CI and publish the repository/release when authorized.
+- [x] Resolve asset publication scope, then run Windows/Linux CI and publish the repository/release when authorized.
 
 ## Direction contract
 
@@ -48,3 +48,5 @@ Initial ruling: keep extracted UI artwork local until the user answers the expli
 A frozen-startup failure traced to the build environment's PATH: PyInstaller selected Poppler's versioned ICU DLL, while Qt requires Windows' unversioned ICU exports. This explains the prior locally frozen Qt failure more precisely than Python version alone. The Windows build now passes a minimal Python/system PATH to PyInstaller; Linux retains its toolchain PATH. Tests cover both paths without changing the parent environment.
 
 The actual Windows bundle passed offline startup and rendered the installed fake-game screen with its bundled fonts/textures. A local copy is available at `C:/Users/Leo/Documents/PUKEY-Mods/dist/PUKEY-Mod-Manager-0.3.0-preview/`. Non-default uppercase SYSTEMROOT handling was independently reviewed and confirmed fixed. Actual Linux rendering and Linux packaged startup await authorized CI publication. No source changes or game artwork were pushed; the installed game remains untouched.
+
+This preview ledger is historical. The installed-game runtime successor is complete and published as `manager-v0.3.0`; see the installed-game UI plan for final Windows/Linux CI, downloaded-package verification and local bundle evidence. No original game artwork was published.

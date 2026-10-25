@@ -22,7 +22,7 @@
 - [x] Build/test a portable decoder from pinned open-source source; verify a synthetic stream on both CI platforms and package its license.
 - [x] Add GUI tests for artwork-free startup, missing-game cache rejection and clearing artwork when installation disappears. Integrate background loading with generation checks and neutral fallback rendering.
 - [x] Remove original images from shipping paths and enforce this during packaging. Update guide, attribution and source-backed design documentation.
-- [ ] Run full tests, read-only actual-game extraction, GUI review and Windows/Linux packaged startup; publish the verified manager update and local bundle.
+- [x] Run full tests, read-only actual-game extraction, GUI review and Windows/Linux packaged startup; publish the verified manager update and local bundle.
 
 ## Review focus
 
@@ -37,3 +37,5 @@ The user chose runtime extraction in response to the asset distribution question
 The production Windows decoder reconstructed all seven verified images directly from the installed demo in 1.28 seconds; a verified cache hit took 0.20 seconds. All 74 installed game files retained their sizes and modification times. The local suite ran 101 tests successfully, with two Windows symbolic-link privilege skips. The license-collection regression was observed failing before adding the exact upstream Valuable 0.1.1 license. The Windows short-path assertion failure was reproduced with an actual 8.3 path and corrected by resolving both comparison operands.
 
 Native Rust and Python integration tests pass on both CI platforms. Linux packaged startup passed in run 40208328608; final matching Windows/Linux bundle verification and publication remain the last task. A bounded visual inspection checked actual-game artwork at 1280×860 and 1024×768, Windows without a game, and the Linux fallback capture. No new material layout defect was found. Earlier Design C independent reviews are recorded in the preceding plan; the runtime asset-loading delta was reviewed inline after further agents became unavailable. Screenshots and extracted images remain ignored local evidence.
+
+Final verification: PR #3 merged as `6a25df1`; its tree exactly matches the tested head. Both platform builds, packaged startup and the release job passed in run 40209048206. `manager-v0.3.0` is published with only the Windows ZIP and Linux tar.gz. Both downloaded release archives contain the native helper and dependency licenses and no game images under manager assets. The downloaded Windows executable passed offline startup and loaded the installed-game theme. The verified local copy is `C:/Users/Leo/Documents/PUKEY-Mods/dist/PUKEY-Mod-Manager-0.3.0/`. The original checkout was fast-forwarded while preserving the user's local ignore rules. Gameplay/Proton remains unverified.
