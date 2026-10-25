@@ -11,7 +11,7 @@
 - [x] Installer integration: source-aware ownership schema 2, migration on successful mutation only, entrypoint-aware Lua/native/mixed status, protected seeds, explicit initial activation and per-source conflict rejection.
 - [x] Logs: bounded read-only tailer plus independent modeless window; 512 KiB initial/128 KiB per second/10,000 visible lines, encoding/rotation/missing handling.
 - [x] UI: reset/help, fixed-width status ribbons/wheel, source import/selection and local updates, source-aware guides/config access, explicit installation prerequisites, logs link. Preserve dirty forms.
-- [ ] Documentation/templates, full validation, fresh code/design review, Windows/Linux bundles, manager-v0.4.0 prerelease and local verified copy.
+- [x] Documentation/templates, full validation, fresh code/design review, Windows/Linux bundles, manager-v0.4.0 prerelease and local verified copy.
 
 ## Execution ledger
 
@@ -26,3 +26,5 @@ Implementation validation: 186 local tests passed with two Windows symlink privi
 Independent safety review found personal media reclassification, ownership lost after removal, invalid merged-cache replacement, activation lost on changed entrypoints and two external-media source routing errors. All were reproduced before fixes and have passing regressions; the reviewer confirmed no unresolved findings. Personal-path history is now independent of active ownership. Generated caches must round-trip all archive validation before registry replacement. Basic imports reject unsupported folder names rather than silently renaming them, and storage reparse checks precede directory creation.
 
 Independent Impeccable review: ship after one bounded fix batch. The final dark scrollable plain-text help, readable requirements and stale release-choice invalidation were confirmed. DESIGN.md and native navigation/action tokens reflect actual code. Screenshots and game images remain ignored. Remaining work is Windows/Linux CI, frozen package checks and publication.
+
+Final release verification: PR #4 merged as `4679e5f`, with a tree identical to the tested head `3c55bb9`. PR run 40231982583 and tag/release run 40232295695 passed both platform builds and packaged startup. `manager-v0.4.0` is published as a prerelease. Both downloaded archives include the decoder/licenses and no game images under manager assets. The downloaded Windows executable passed startup and read-only installed-game theme capture; the verified copy is `C:/Users/Leo/Documents/PUKEY-Mods/dist/PUKEY-Mod-Manager-0.4.0/`. The original checkout was fast-forwarded while its user's ignore-rule edits remained unchanged. Actual third-party gameplay and Proton compatibility remain unverified; structural/install checks do not establish UE4SS ABI compatibility.
