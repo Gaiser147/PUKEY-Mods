@@ -67,7 +67,7 @@ class GameAssetsTests(unittest.TestCase):
         messages = []
         output = game_assets.extract_theme(self.win64, self.cache, messages.append)
         self.assertTrue(game_assets.game_present(self.win64))
-        self.assertTrue(output.is_relative_to(self.cache.resolve()))
+        self.assertTrue(output.resolve().is_relative_to(self.cache.resolve()))
         for i, name in enumerate(NAMES):
             with Image.open(output / name) as image:
                 self.assertEqual(image.size, (2, 2))
