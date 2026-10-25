@@ -1,14 +1,84 @@
 """Native presentation widgets and a small, consistent line-icon family."""
 from functools import lru_cache
 import math
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QSize, QRectF, QPoint, QPointF, QLineF
-from PySide6.QtGui import QColor, QIcon, QPixmap, QPainter, QPen, QPolygonF, QFont, QTextOption
-from PySide6.QtWidgets import QLabel, QStyledItemDelegate, QStyle, QSizePolicy
+from PySide6.QtGui import QColor, QIcon, QPixmap, QPainter, QPen, QPolygonF, QFont, QTextOption, QRegion
+from PySide6.QtWidgets import QLabel, QStyledItemDelegate, QStyle, QSizePolicy, QFrame, QListWidget, QListView
+
+
+@lru_cache(maxsize=16)
+def texture(name, directory=None):
+    if not directory:
+        return QPixmap()
+    pixmap = QPixmap(str(Path(directory) / (name + '.png')))
+    if pixmap.isNull():
+        return pixmap
+    bounds = QRegion(pixmap.mask()).boundingRect()
+    return pixmap.copy(bounds) if not bounds.isEmpty() else pixmap
+
+
+def widget_texture(widget, name):
+    return texture(name, widget.window().property('gameThemePath'))
+
+
+class DialoguePanel(QFrame):
+    """Real texture, with stable corners rather than stretched edge decoration."""
+    def __init__(self, kind='sheet', parent=None):
+        super().__init__(parent)
+        self.kind = kind
+        self.setObjectName('dialoguePanel')
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        source = widget_texture(self, self.kind)
+        if source.isNull() or min(source.width(), source.height()) <= 96:
+            painter.fillRect(self.rect(), QColor('#18151a'))
+            painter.setPen(QPen(QColor('#514452'), 1))
+            painter.drawRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1), 3, 3)
+            painter.end()
+            return
+        edge, inset = 48, 16
+        xs = (0, edge, source.width()-edge, source.width())
+        ys = (0, edge, source.height()-edge, source.height())
+        dx = (0, inset, self.width()-inset, self.width())
+        dy = (0, inset, self.height()-inset, self.height())
+        for row in range(3):
+            for col in range(3):
+                painter.drawPixmap(QRectF(dx[col], dy[row], dx[col+1]-dx[col], dy[row+1]-dy[row]),
+                    source, QRectF(xs[col], ys[row], xs[col+1]-xs[col], ys[row+1]-ys[row]))
+        painter.end()
+
+
+class ModNavigation(QListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFlow(QListView.Flow.LeftToRight)
+        self.setWrapping(False)
+        self.setMovement(QListView.Movement.Static)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFixedHeight(68)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.updateGeometries()
+        self.doItemsLayout()
+
+
+class OrnamentHeading(QLabel):
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.drawPixmap(self.rect().adjusted(0, 7, 0, -7), widget_texture(self, 'heading'))
+        painter.end()
+        super().paintEvent(event)
 
 
 @lru_cache(maxsize=128)
-def icon(kind, color='#252620'):
+def icon(kind, color='#f0ece8'):
     image = QPixmap(48, 48)
     image.fill(Qt.GlobalColor.transparent)
     painter = QPainter(image)
@@ -79,7 +149,7 @@ def icon(kind, color='#252620'):
     return QIcon(image)
 
 
-def mod_icon(mod, color='#252620'):
+def mod_icon(mod, color='#f0ece8'):
     kind = ('image' if mod.get('images') else 'film' if mod.get('video_list') else
             'camera' if mod.get('id') == 'FreeCam' else 'sun' if mod.get('id') == 'LightTools' else 'package')
     return icon(kind, color)
@@ -87,38 +157,37 @@ def mod_icon(mod, color='#252620'):
 
 class ModDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
-        return QSize(224, 76)
+        view = self.parent()
+        count = max(1, min(4, view.count()))
+        return QSize(max(185, view.viewport().width() // count), 53)
 
     def paint(self, painter, option, index):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
         hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
-        rect = option.rect.adjusted(8, 3, -8, -3)
+        rect = option.rect.adjusted(4, 5, -9, -5)
         if selected or hovered:
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor('#e8af42') if selected else QColor('#393b33'))
-            painter.drawRoundedRect(QRectF(rect), 8, 8)
-        foreground = '#252620' if selected else '#ffffff'
-        secondary = '#252620' if selected else '#b8bdb0'
-        mod = index.data(Qt.ItemDataRole.UserRole) or {}
-        mod_icon(mod, foreground).paint(painter, rect.x() + 14, rect.y() + 22, 24, 24)
+            painter.setOpacity(1 if selected else .22)
+            ribbon = widget_texture(self.parent(), 'ribbon')
+            if ribbon.isNull():
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor('#02e5a2'))
+                painter.drawRoundedRect(QRectF(rect), 2, 2)
+            else:
+                painter.drawPixmap(rect, ribbon)
+            painter.setOpacity(1)
+        foreground = '#101113' if selected else '#f0ece8'
         lines = str(index.data(Qt.ItemDataRole.DisplayRole) or '').split('\n', 1)
-        left = rect.x() + 52
-        width = rect.width() - 62
-        font = QFont(option.font)
-        font.setPointSizeF(10.5)
-        font.setWeight(QFont.Weight.DemiBold)
+        left = rect.x() + 19
+        width = rect.width() - 38
+        font = QFont('Oswald', 15)
         painter.setFont(font)
         painter.setPen(QColor(foreground))
-        painter.drawText(left, rect.y() + 29, painter.fontMetrics().elidedText(lines[0], Qt.TextElideMode.ElideRight, width))
-        font.setPointSizeF(9)
-        font.setWeight(QFont.Weight.Normal)
-        painter.setFont(font)
-        painter.setPen(QColor(secondary))
-        painter.drawText(left, rect.y() + 48, painter.fontMetrics().elidedText(lines[1] if len(lines) > 1 else '', Qt.TextElideMode.ElideRight, width))
+        painter.drawText(QRectF(left, rect.y(), width, rect.height()), Qt.AlignmentFlag.AlignVCenter,
+                         painter.fontMetrics().elidedText(lines[0], Qt.TextElideMode.ElideRight, width))
         if option.state & QStyle.StateFlag.State_HasFocus:
-            painter.setPen(QPen(QColor('#8a5c0d' if selected else '#b8bdb0'), 1, Qt.PenStyle.DashLine))
+            painter.setPen(QPen(QColor('#101113' if selected else '#02e5a2'), 1, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRoundedRect(QRectF(rect.adjusted(2, 2, -2, -2)), 7, 7)
         painter.restore()
@@ -141,7 +210,7 @@ class PreviewCanvas(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.fillRect(self.rect(), QColor('#f4f3ef'))
+        painter.fillRect(self.rect(), QColor('#141216'))
         pixmap = self.pixmap()
         if pixmap is not None and not pixmap.isNull():
             size = self.size() - QSize(28, 28)
@@ -151,13 +220,13 @@ class PreviewCanvas(QLabel):
             painter.setClipRect(x, y, scaled.width(), scaled.height())
             for row in range(y, y + scaled.height(), 12):
                 for column in range(x, x + scaled.width(), 12):
-                    shade = '#ffffff' if ((row - y) // 12 + (column - x) // 12) % 2 else '#d9dcd3'
+                    shade = '#514c55' if ((row - y) // 12 + (column - x) // 12) % 2 else '#38343d'
                     painter.fillRect(column, row, 12, 12, QColor(shade))
             painter.drawPixmap(QPoint(x, y), scaled)
             painter.restore()
         else:
-            icon('image', '#73766d').paint(painter, self.width() // 2 - 18, self.height() // 2 - 54, 36, 36)
-            painter.setPen(QColor('#595c53'))
+            icon('image', '#b5adb5').paint(painter, self.width() // 2 - 18, self.height() // 2 - 54, 36, 36)
+            painter.setPen(QColor('#b5adb5'))
             text_option = QTextOption(Qt.AlignmentFlag.AlignHCenter)
             text_option.setWrapMode(QTextOption.WrapMode.WordWrap)
             painter.drawText(QRectF(20, self.height() // 2 + 2, self.width() - 40, self.height() // 2 - 20),

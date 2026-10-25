@@ -1,96 +1,106 @@
 ---
 name: PUKEY Mod Manager
-description: A clear native desktop workbench for selecting and configuring mods.
+description: Native dialogue sheets for selecting, configuring, and preparing PUKEY mods.
 colors:
-  primary: "#e8af42"
-  primary-hover: "#efbf65"
-  primary-border: "#be882b"
-  focus: "#8a5c0d"
-  workspace: "#ffffff"
-  warm-surface: "#f4f3ef"
-  ink: "#252620"
-  secondary-text: "#595c53"
-  sidebar-muted: "#b8bdb0"
-  sidebar-hover: "#393b33"
-  border: "#d9dcd3"
-  control-hover: "#eeeee7"
-  control-pressed: "#dfdfd6"
-  disabled-text: "#73766d"
-  disabled-background: "#e6e6df"
-  disabled-border: "#d0d3c8"
-  icon-surface: "#f5e9cf"
-  success: "#31633e"
-  error: "#a52b2b"
-  progress-track: "#dedfd6"
-  progress-fill: "#a76d0f"
-  scrollbar-thumb: "#a7ad9f"
+  mint: "#02e5a2"
+  pink: "#ff0060"
+  workspace: "#111012"
+  ink-on-mint: "#101113"
+  text: "#f0ece8"
+  muted: "#b5adb5"
+  panel: "#211b24"
+  control: "#080709"
+  button: "#18151a"
+  hover: "#302630"
+  pressed: "#422135"
+  border: "#766a78"
+  divider: "#514452"
+  disabled-text: "#a69aa6"
+  disabled-surface: "#29232b"
+  disabled-field: "#201a22"
+  preview: "#141216"
 typography:
-  title: {fontFamily: "Qt application font", fontSize: "22pt", fontWeight: 600}
-  brand: {fontFamily: "Qt application font", fontSize: "14pt", fontWeight: 600}
-  body: {fontFamily: "Qt application font", fontSize: "10.5pt"}
-  label: {fontFamily: "Qt application font", fontSize: "10.5pt", fontWeight: 600}
-  supporting: {fontFamily: "Qt application font", fontSize: "9.5pt"}
-  small: {fontFamily: "Qt application font", fontSize: "9pt"}
-rounded: {indicator: "4px", field: "5px", button: "6px", panel: "8px", brand: "9px", icon: "10px"}
-spacing: {xs: "4px", sm: "8px", md: "12px", lg: "18px", xl: "22px", frame: "28px"}
+  brand: {fontFamily: "Amarante", fontSize: "28pt"}
+  title: {fontFamily: "Amarante", fontSize: "27pt"}
+  empty-title: {fontFamily: "Amarante", fontSize: "22pt"}
+  key-heading: {fontFamily: "Amarante", fontSize: "18pt"}
+  navigation: {fontFamily: "Oswald", fontSize: "15pt"}
+  accent: {fontFamily: "Oswald", fontSize: "13pt"}
+  key: {fontFamily: "Oswald", fontSize: "12pt"}
+  body: {fontFamily: "Segoe UI, DejaVu Sans", fontSize: "10.5pt"}
+  supporting: {fontFamily: "Segoe UI, DejaVu Sans", fontSize: "9.5pt"}
+  small: {fontFamily: "Segoe UI, DejaVu Sans", fontSize: "9pt"}
+rounded: {field: "2px", button: "3px"}
+spacing: {xs: "4px", sm: "8px", md: "10px", row: "12px", sheet: "18px", content: "22px", frame: "24px"}
 components:
-  button-primary: {backgroundColor: "{colors.primary}", textColor: "{colors.ink}", rounded: "{rounded.button}", padding: "5px 12px"}
-  button-primary-hover: {backgroundColor: "{colors.primary-hover}"}
-  button-secondary: {backgroundColor: "{colors.workspace}", textColor: "{colors.ink}", rounded: "{rounded.button}", padding: "5px 12px"}
-  field: {backgroundColor: "{colors.workspace}", textColor: "{colors.ink}", rounded: "{rounded.field}", padding: "4px 9px"}
-  navigation-selected: {backgroundColor: "{colors.primary}", textColor: "{colors.ink}", rounded: "{rounded.panel}"}
-  game-panel: {backgroundColor: "{colors.warm-surface}", rounded: "{rounded.panel}", padding: "11px 14px 12px"}
-  tab: {textColor: "{colors.secondary-text}", padding: "12px 14px"}
+  button-secondary: {backgroundColor: "{colors.button}", textColor: "{colors.text}", rounded: "{rounded.button}", padding: "4px 11px"}
+  button-hover: {backgroundColor: "{colors.hover}"}
+  button-pressed: {backgroundColor: "{colors.pressed}"}
+  button-primary: {textColor: "{colors.text}", typography: "{typography.accent}", padding: "4px 17px"}
+  button-disabled: {backgroundColor: "{colors.disabled-surface}", textColor: "{colors.disabled-text}"}
+  field: {backgroundColor: "{colors.control}", textColor: "{colors.text}", rounded: "{rounded.field}", padding: "4px 9px"}
+  navigation-selected: {textColor: "{colors.ink-on-mint}", typography: "{typography.navigation}"}
+  game-panel: {backgroundColor: "{colors.panel}", rounded: "{rounded.button}", padding: "7px 12px 8px"}
+  tab: {textColor: "{colors.muted}", typography: "{typography.accent}", padding: "7px 12px"}
 ---
 
 # Design System: PUKEY Mod Manager
 
 ## Overview
 
-**Creative North Star: "The clear desktop workbench"**
+**Creative North Star: "PUKEY's dialogue desk"**
 
-A charcoal library rail anchors a white workspace. Warm amber gives selection and available primary actions a clear visual identity; compact, labelled native controls keep attention on the selected mod and its actual state. English copy uses familiar desktop verbs.
+The user-selected Design C brings PUKEY's dialogue language into an editable native desktop workbench: smoky black sheets, a mint selection ribbon, pink primary actions, and off-white ornamental headings. Neutral body type keeps settings, paths, and installation state readable. The approved Qt study is the visual authority; current implementation is recorded in `manager/theme.py`, `manager/widgets.py`, and `manager/gui.py`.
 
 **Key Characteristics:**
-- Persistent charcoal navigation with amber selection.
-- A compact game panel and selected-mod actions above scrolling content.
-- Separate preferences, keybindings, and capability-dependent media preparation.
-- Visible keyboard focus and persistent save/apply feedback. This records PySide6/Qt Widgets in `manager/theme.py`, `manager/widgets.py`, and `manager/gui.py`. Dimensions are Qt logical pixels; fonts use points. Native desktop details live in the sidecar extensions.
+- Horizontal mod navigation above textured dialogue sheets.
+- Independently scrolling settings and editable keybindings, sharing one save action.
+- Persistent image and video actions, explicit installation state, and visible keyboard focus.
+- Native PySide6/Qt Widgets for Windows and Linux; English interface copy.
 
 ## Colors
 
-**Primary.** Warm amber marks selected navigation, installation or update actions, and save/apply buttons. Deeper amber identifies focus and selected tab underlines. Prominence follows the available task; reinstall stays neutral when no update is available.
+**Primary.** Mint identifies the selected ribbon, key values, enabled state, keyboard focus, and selected tab underline. Pink appears through the primary-action artwork and progress fill; it is an action accent rather than a replacement for the mint selection language.
 
-**Neutral.** Charcoal ink doubles as the sidebar surface. White is the workspace and control surface; warm gray separates the game panel and preview canvas. Muted sidebar text also supplies control borders. Green accompanies enabled and loader-ready text; red accompanies actionable errors.
+**Neutral.** Near-black workspace and input wells support off-white text. Smoke textures distinguish the main dialogue sheet and narrower shortcut sheet. Muted lilac-gray supports status and explanatory text; brighter borders identify controls without competing with the textured edges. Native dialogs and combo popups use opaque dark surfaces.
 
 **The Visible State Rule.** Pair color with explicit text, selection, focus, or control state.
 
 ## Typography
 
-Use the Qt application font. The selected-mod title is the strongest heading; the smaller brand, semibold labels, and supporting status text establish the remaining hierarchy. Navigation names use semibold body type and small state text. The empty-state heading is 18pt. Preserve platform font metrics, wrapping for paths/messages, and plain-text rendering. Offscreen font fallbacks are test support, not a shipped font identity.
+Amarante supplies the brand, selected-mod title, empty-state heading, and key-sheet heading. Oswald supplies horizontal navigation, tabs, section labels, primary actions, and mint key values. Segoe UI, falling back to DejaVu Sans, supplies body text and ordinary controls. Both display fonts are bundled OFL fonts; do not use them for long descriptions or paths. Sizes in the frontmatter are Qt points, not CSS pixels. Preserve plain-text labels and wrapping for descriptions and messages.
+
+## Runtime artwork
+
+The approved game-derived C identity activates only after the selected supported game supplies its seven verified images. No original PNG is bundled. Extraction runs in a worker into a versioned per-install cache; missing, removed, damaged or unsupported installations use plain native panels, a text wordmark and flat native selection/actions. The layout, editable controls and separately licensed fonts remain available. Cache images are never treated as installation proof.
 
 ## Layout
 
-Initial window: 1120 × 800; minimum: 900 × 640. Visual checks cover 1120 × 800 and 1024 × 768. The fixed sidebar is 236 wide, with margins 12/26/12/18 (left/top/right/bottom). Workspace margins are 28/24/28/12 with an 18 gap. No splitter or mobile layout is implemented. The compact game panel precedes the selected-mod header, description, and tabs. Settings and Keybindings use separated rows: minimum height 64, vertical padding 11, label/control gap 20, control width 200. Forms scroll; the save/apply footer, restart guidance, progress, and operation status stay outside scrolling content. Images place a 270–310-wide options column beside an expanding preview, separated by 22. The preview minimum is 160 × 220, with a 300 × 260 size hint. Videos use a single-column import layout. Empty library guidance replaces mod details until a selection exists.
+Initial window is 1280 × 860; minimum is 900 × 640. Final native captures cover 1280 × 860 and 1024 × 768. Qt logical pixels govern geometry. Outer margins are 24/14/24/10 (left/top/right/bottom), with a 10 gap. A masthead holds the game logo, brand, catalogue controls, and collapsible game-folder setup. The horizontal catalogue is 68 high, scrolls on overflow, and remains keyboard selectable.
 
-**The Persistent Action Rule.** Keep saving and applying a prepared image accessible while content scrolls.
+The expanding main sheet sits beside a fixed 280-wide key sheet with an 18 gap; main-sheet margins are 22/18/22/17 and key-sheet margins 18/16/18/16. Settings rows have a 56 minimum height, 8 vertical padding, 12 control gap, and 180-wide fields; key controls are 116 wide. Hide the key sheet when a mod has no keys or media is active. Images use a 270–310-wide options column, 22 gap, and expanding preview; videos use one column. There are no web breakpoints, mobile mode, or splitter.
+
+**The Persistent Action Rule.** Keep saving, image preview/apply/restore, and video import/restore accessible outside scrolling content. Show the actions appropriate to the active capability and actual state.
 
 ## Elevation & Depth
 
-Flat surfaces, tonal separation, and thin dividers provide depth. No custom shadows, gradients, or transitions are defined. Qt's indeterminate progress animation communicates active work.
+Depth comes from smoke, irregular sheet edges, opaque input wells, and thin dividers. There are no custom shadows or decorative transitions. DialoguePanel paints nine image regions, preserving corners with 48-pixel source edges mapped to 16-pixel destination insets. Qt's indeterminate progress animation communicates work.
 
 ## Shapes
 
-Small curves distinguish fields, buttons, panels, and icon tiles using the recorded radii. Standard borders are one pixel; button and field focus uses a two-pixel deep amber border. Sidebar actions use amber focus; navigation uses an inset dashed focus outline. Tabs use a two-pixel underline rather than filled pills.
+Sheets and selected ribbons inherit their irregular silhouettes from artwork. Native controls use small curves from the frontmatter, one-pixel borders, and two-pixel mint focus borders. Tabs use a two-pixel mint underline. Navigation keyboard focus is an inset dashed outline, dark on the selected ribbon and mint otherwise. Do not replace the sheet silhouette with generic rounded cards.
 
 ## Components
 
-Buttons retain Qt keyboard activation, explicit disabled states, and native tooltips. Activation is a checkable Enabled/Disabled button. Guide and removal actions use named line icons with accessible names. Fields use 28-pixel QSS minimum height before padding/border; image controls use 24 with compact padding. Boolean settings show On/Off beside the amber SVG check indicator. Combo and spin arrows use shipped SVG assets. The custom navigation delegate paints 76-high rows with icons, names, and installation states; amber selection and charcoal hover retain keyboard selection. Settings, Keybindings, and media tabs use a thin shared divider. PreviewCanvas scales images without distortion and paints a 12-pixel white/gray checkerboard beneath transparency, with a labelled empty state. Changed preparation inputs invalidate the preview. Save/apply availability follows actual dirty, installed, and preview state.
+Primary QPushButtons use `button-pink.png` as a six-pixel border image (source slices 18/28/18/28), Oswald type, and 165 minimum width. Hover adds a dark pink backing; disabled actions remove the image and use muted text, fill, and border. Secondary controls retain native keyboard activation, hover/pressed states, tooltips, and explicit enabled/disabled text. Checkboxes pair On/Off text with the mint SVG indicator.
+
+ModNavigation uses Oswald labels on a mint textured selected ribbon, a faint ribbon on hover, and elision; cells are at least 185 wide and distribute across up to four columns before horizontal overflow. The right-hand shortcut sheet contains real editable QComboBoxes, not a static controls legend. Combo popups and QMessageBox/QDialog surfaces remain opaque and dark. PreviewCanvas preserves aspect ratio, uses a dark transparency checkerboard, and labels its empty state. Changes to preparation inputs invalidate the preview; apply requires a valid current preview. The footer shares saving across settings and keys and retains media actions while their content scrolls.
 
 ## Do's and Don'ts
 
-- **Do** reuse the source-backed Qt tokens, line-icon family, and native keyboard behavior.
-- **Do** keep installation, enabled, unsaved, and error states explicit in text.
-- **Do** preserve readable paths, labelled controls, persistent actions, and visible focus at checked desktop sizes.
-- **Don't** describe web breakpoints, iOS components, or HTML replicas as implemented native UI.
-- **Don't** infer gameplay or Linux runtime compatibility from visual and offscreen checks.
+- **Do** reuse the native Qt tokens, textured sheets, mint navigation, and Amarante/Oswald hierarchy.
+- **Do** preserve explicit state, labelled editable controls, visible focus, and persistent actions at checked desktop sizes.
+- **Do** retain extraction metadata in `manager/assets/game-ui-layout.json` and font licenses in `manager/assets/fonts/`.
+- **Don't** describe HTML replicas, iOS controls, or web breakpoints as implemented native UI.
+- **Don't** infer Linux runtime or gameplay compatibility from visual and offscreen checks.
+- **Don't** ship original game artwork. Read it only from a present supported installation; a local cache alone must not enable it.

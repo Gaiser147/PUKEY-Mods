@@ -19,6 +19,7 @@ class ManagerUiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication([])
+        cls.app.setStyle('Fusion')
 
     def make_window(self, snapshot=None):
         from manager.gui import Window
@@ -39,6 +40,38 @@ class ManagerUiTests(unittest.TestCase):
         self.assertTrue(window.tabs.isHidden())
         self.assertTrue(window.detail_footer.isHidden())
 
+    def test_startup_needs_no_game_artwork(self):
+        window = self.make_window()
+        self.assertTrue(hasattr(window, 'theme_directory'), 'The interface must start without bundled game art')
+        self.assertIsNone(window.theme_directory)
+        self.assertTrue(window.logo_label.pixmap().isNull())
+        self.assertEqual(window.logo_label.text(), 'PUKEY')
+
+    def test_cached_game_art_is_not_applied_without_an_installation(self):
+        window = self.make_window()
+        self.assertTrue(hasattr(window, 'apply_game_theme'), 'Game artwork must be installation-gated')
+        self.assertFalse(window.apply_game_theme(window.preferences_path.parent))
+        self.assertIsNone(window.theme_directory)
+
+    def test_game_art_is_cleared_when_the_selected_game_disappears(self):
+        from PIL import Image
+        window = self.make_window()
+        self.assertTrue(hasattr(window, 'apply_game_theme'), 'Game artwork must be installation-gated')
+        win64 = window.preferences_path.parent / 'Game'
+        window.manager = SimpleNamespace(win64=win64)
+        cache = window.preferences_path.parent / 'game-ui'
+        cache.mkdir()
+        for name in ('logo', 'dialogue', 'sheet', 'ribbon', 'button-pink', 'heading', 'divider'):
+            Image.new('RGBA', (160, 160), (20, 35, 30, 255)).save(cache / (name + '.png'))
+        with patch('manager.game_assets.game_present', return_value=True):
+            self.assertTrue(window.apply_game_theme(cache, win64))
+        self.assertEqual(window.theme_directory, cache)
+        self.assertFalse(window.logo_label.pixmap().isNull())
+        with patch('manager.game_assets.game_present', return_value=False):
+            window.refresh_game_theme_presence()
+        self.assertIsNone(window.theme_directory)
+        self.assertTrue(window.logo_label.pixmap().isNull())
+
     def test_image_preparation_actions_fit_the_small_desktop_view(self):
         from manager.catalog import Snapshot
         snapshot = Snapshot.from_directory(Path(__file__).resolve().parents[1])
@@ -52,7 +85,7 @@ class ManagerUiTests(unittest.TestCase):
         window.resize(1024, 768)
         window.show()
         QTest.qWait(30)
-        viewport = window.media_scroll.viewport()
+        viewport = window.detail_footer
         for button in (window.preview_button, window.restore_image_button):
             self.assertTrue(viewport.rect().contains(button.mapTo(viewport, button.rect().topLeft())))
             self.assertTrue(viewport.rect().contains(button.mapTo(viewport, button.rect().bottomRight())))
@@ -67,14 +100,90 @@ class ManagerUiTests(unittest.TestCase):
             status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': '1.0'},
             settings=lambda mod: {'Speed': 20, 'ToggleKey': 'F5'})
         window.render_details()
-        self.assertGreaterEqual(window.tabs.indexOf(window.keys_scroll), 0)
+        self.assertTrue(hasattr(window, 'keys_panel'), 'Keybindings need their own dialogue sheet')
+        self.assertTrue(window.keys_panel.isAncestorOf(window.keys_scroll))
         self.assertTrue(window.keys_scroll.isAncestorOf(window.settings_widgets['ToggleKey']))
         self.assertTrue(window.settings_scroll.isAncestorOf(window.settings_widgets['Speed']))
-        window.tabs.setCurrentWidget(window.keys_scroll)
         window.settings_widgets['ToggleKey'].setCurrentText('F6')
         self.assertTrue(window.save_button.isEnabled())
         self.assertFalse(window.save_button.isHidden())
         window._dirty = False
+
+    def test_video_actions_stay_visible_with_game_setup_expanded(self):
+        from manager.catalog import Snapshot
+        snapshot = Snapshot.from_directory(Path(__file__).resolve().parents[1])
+        window = self.make_window(snapshot)
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True, 'version': mod['version']},
+            settings=lambda mod: {field['key']: field['default'] for field in mod.get('settings', [])})
+        window.mod_list.setCurrentRow(3)
+        window.tabs.setCurrentWidget(window.media_scroll)
+        window.resize(1024, 768)
+        window.show()
+        QTest.qWait(30)
+        self.assertFalse(window.game_panel.isHidden())
+        self.assertTrue(hasattr(window, 'import_video_button'), 'Video import needs a persistent action')
+        for button in (window.import_video_button, window.restore_video_button):
+            self.assertFalse(button.isHidden())
+            self.assertTrue(window.detail_footer.rect().contains(
+                button.mapTo(window.detail_footer, button.rect().bottomRight())))
+
+    def test_horizontal_catalogue_keeps_future_mods_reachable(self):
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QListView
+        mods = [{'id': f'Example{i}', 'name': f'Future mod {i}', 'version': '1.0',
+                 'description': '', 'controls': '', 'settings': []} for i in range(12)]
+        window = self.make_window(SimpleNamespace(mods=mods, files={}, revision='test'))
+        window.resize(1024, 768)
+        window.show()
+        self.assertEqual(window.mod_list.flow(), QListView.Flow.LeftToRight)
+        window.mod_list.setFocus()
+        QTest.keyClick(window.mod_list, Qt.Key.Key_End)
+        QTest.qWait(30)
+        self.assertEqual(window.current_mod['id'], 'Example11')
+        self.assertTrue(window.mod_list.viewport().rect().intersects(
+            window.mod_list.visualItemRect(window.mod_list.currentItem())))
+
+    def test_popup_and_confirmation_surfaces_are_opaque_and_dark(self):
+        from PySide6.QtCore import QPoint
+        from PySide6.QtWidgets import QMessageBox
+        mod = {'id': 'Example', 'name': 'Example', 'version': '1.0', 'description': '', 'controls': '',
+               'settings': [{'key': 'Mode', 'label': 'Mode', 'type': 'enum', 'default': 'idle',
+                             'options': ['idle', 'always', 'other']}]}
+        window = self.make_window(SimpleNamespace(mods=[mod], files={}, revision='test'))
+        window.show()
+        combo = window.settings_widgets['Mode']
+        combo.setEnabled(True)
+        combo.showPopup()
+        QTest.qWait(30)
+        view = combo.view()
+        point = view.visualRect(combo.model().index(2, 0)).bottomLeft() + QPoint(3, -2)
+        pixel = view.viewport().grab().toImage().pixelColor(point)
+        combo.hidePopup()
+        self.assertGreater(pixel.alpha(), 240)
+        self.assertLess(pixel.lightness(), 100)
+        box = QMessageBox(window)
+        self.addCleanup(box.close)
+        box.setText('Remove the selected mod? Personal files are preserved.')
+        box.show()
+        QTest.qWait(30)
+        pixel = box.grab().toImage().pixelColor(5, box.height() // 2)
+        self.assertGreater(pixel.alpha(), 240)
+        self.assertLess(pixel.lightness(), 100)
+
+    def test_game_setup_can_be_reopened_after_selecting_a_ready_game(self):
+        window = self.make_window()
+        game = window.preferences_path.parent / 'Game'
+        win64 = game / 'PUKEY_GODDESS_SHOT_TRICK/Binaries/Win64'
+        (win64 / 'ue4ss').mkdir(parents=True)
+        for filename in ('PUKEY_GODDESS_SHOT_TRICK_Demo-Win64-Shipping.exe', 'dwmapi.dll', 'ue4ss/UE4SS.dll'):
+            (win64 / filename).touch()
+        window.set_game(game)
+        self.assertTrue(hasattr(window, 'game_panel'), 'Game setup needs a collapsible panel')
+        self.assertTrue(window.game_panel.isHidden())
+        window.folder_button.click()
+        self.assertFalse(window.game_panel.isHidden())
+        self.assertEqual(window.path_edit.text(), str(game))
 
     def test_selected_mod_header_exposes_installation_state(self):
         mod = {'id': 'Example', 'name': 'Example', 'version': '1.1', 'description': '', 'controls': '', 'settings': []}

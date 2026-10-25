@@ -25,3 +25,7 @@ Use clear English in the distributed app, matching existing FamSwap distribution
 ## Principles
 
 Show actual installation status. Separate settings from code. Preserve personal data by default. Keep every main action accessible by keyboard. Make failures recoverable and state what the user can do next.
+
+## Interface artwork
+
+The user selected the game-derived dialogue design C. Original game artwork is never bundled or committed: read seven verified UI textures from the selected local installation into a private cache. Show a plain native interface when no supported game is present, while extraction runs, or when extraction fails. A cache alone never enables the game artwork. Fonts sourced separately under OFL may be bundled.
