@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import time
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
     parser.add_argument('--game-dir', type=Path, help='Select an installation; changes still require user action')
     parser.add_argument('--smoke-test', action='store_true', help='Construct the app offline and exit')
     parser.add_argument('--screenshot', type=Path, help='Save a development screenshot and exit')
-    parser.add_argument('--size', default='1120x800', help='Screenshot window size')
+    parser.add_argument('--size', default='1280x860', help='Screenshot window size')
     arguments = parser.parse_args()
     if arguments.smoke_test or arguments.screenshot:
         os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
@@ -32,6 +33,10 @@ def main():
         for name in ('chevron-down.svg', 'chevron-up.svg', 'check.svg'):
             if QPixmap(str(Path(__file__).resolve().parent / 'assets' / name)).isNull():
                 raise RuntimeError('Required interface asset could not be loaded: ' + name)
+        if getattr(sys, 'frozen', False):
+            from .native_decoder import decompress_oodle
+            if decompress_oodle(b'\x4c\x06\xab', 1) != b'\xab':
+                raise RuntimeError('The packaged UI decoder failed its startup check.')
     temporary = tempfile.TemporaryDirectory(prefix='pukey-smoke-') if arguments.smoke_test or arguments.screenshot else None
     snapshot = Snapshot.from_directory(arguments.source) if arguments.source else None
     if snapshot is None and arguments.smoke_test:
@@ -49,7 +54,11 @@ def main():
         window.resize(width, height)
     window.show()
     if arguments.smoke_test or arguments.screenshot:
+        capture_started = time.monotonic()
         def done():
+            if window._busy and time.monotonic() - capture_started < 25:
+                QTimer.singleShot(100, done)
+                return
             if arguments.screenshot:
                 arguments.screenshot.parent.mkdir(parents=True, exist_ok=True)
                 if not window.grab().save(str(arguments.screenshot)):

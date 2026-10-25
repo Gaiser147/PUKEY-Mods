@@ -8,13 +8,21 @@ Download a **PUKEY Mod Manager** prerelease from [GitHub Releases](https://githu
 
 On Linux, the executable may need permission to run: `chmod +x PUKEY-Mod-Manager`. The Linux bundle targets desktop Linux x86-64, including Steam Deck desktop mode; actual game/mod behavior under Proton remains unverified. It manages the Windows game files, not a native Linux game build.
 
+## Game-derived interface
+
+The manager ships without original game artwork. After selecting a supported installation, it reads seven UI textures from the game's archives into a local cache beside the manager preferences. This is read-only for the game; neither FModel nor a separate runtime is needed. Without the game, while extraction runs, or after an unsupported game update, a plain interface remains usable. Selecting another installation clears the previous artwork; the app also stops displaying cached artwork if the selected installation disappears.
+
+Only the verified current demo container is supported for artwork extraction. A future game update may need a manager update before its artwork can be shown. This does not prevent ordinary mod management. The cache is versioned and integrity-checked rather than trusted as proof that the game is installed.
+
 ## First installation
 
 1. Refresh the catalogue. No GitHub account or Git installation is required.
 2. Let **Find in Steam** locate the game, or use **Browse**. You can select the game root, its `PUKEY_GODDESS_SHOT_TRICK` directory, or `Binaries/Win64`.
 3. Close the game. If UE4SS is missing, choose **Install UE4SS** to download it from its official experimental release. The manager disables the three incompatible example mods through configuration and activation markers.
 4. Select a mod and choose **Install mod**. Repeat for whichever mods you want.
-5. Adjust preferences under **Settings** or shortcuts under **Keybindings**, then choose **Save settings**. Both views share the same configuration. Restart the game after changing scripts, settings, activation, or removing replacement media.
+5. Adjust preferences under **Settings** or shortcuts in the **Keybindings** sheet on the right, then choose **Save settings**. Both sheets share the same configuration. The top mod ribbon scrolls horizontally when additional mods are available. Restart the game after changing scripts, settings, activation, or removing replacement media.
+
+Use **Game folder…** in the header to reopen Steam discovery, folder selection and loader setup. Setup collapses automatically when UE4SS is ready. Media tabs expand across the workspace; their preview/apply actions stay below the scrolling content.
 
 On Linux/Proton, use **Copy Proton launch option**, then paste the DLL override into the game's Steam launch options:
 
@@ -44,6 +52,8 @@ Settings are written to `ue4ss/Mods/<Name>/settings.json` and `settings.lua`; th
 ## Source launch and testing
 
 The new manager requires Python **3.10+**; existing standalone tools retain their previous requirements.
+
+Source launches work without the native UI decoder and use the plain interface in that case. To enable archive extraction in a source checkout, install the Rust build toolchain and run `python tools/build_ui_decoder.py`. Standalone releases already include the helper. Distribution builds require Python 3.12 and build the helper before `python tools/build_manager.py`.
 
 ```powershell
 py -m venv .venv

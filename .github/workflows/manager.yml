@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 15
     env:
       QT_QPA_PLATFORM: offscreen
+      PUKEY_REQUIRE_NATIVE_DECODER: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,15 +27,23 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: manager/requirements*.txt
+      - uses: dtolnay/rust-toolchain@stable
       - name: Linux runtime libraries
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxcb-cursor0 libxkbcommon-x11-0
       - run: python -m pip install -r manager/requirements-dev.txt
+      - name: Build open-source UI decoder and run native tests
+        run: python tools/build_ui_decoder.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-decoder-${{ runner.os }}
+          path: manager/assets/native/
+          if-no-files-found: error
       - run: python -m unittest discover -s tests -v
       - run: python -m manager --smoke-test
       - name: Capture native desktop layouts
         run: |
-          python -m manager --source . --screenshot dist/ui-qa/desktop.png --size 1120x800
+          python -m manager --source . --screenshot dist/ui-qa/desktop.png --size 1280x860
           python -m manager --source . --screenshot dist/ui-qa/small-desktop.png --size 1024x768
       - run: python tools/build_famswap_package.py 1.0
       - run: python tools/build_manager.py

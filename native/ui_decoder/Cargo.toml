@@ -1,0 +1,18 @@
+[package]
+name = "pukey_ui_decoder"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "Bounded C ABI for the PUKEY Mod Manager's local UI extraction"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+oozextract = "=0.5.6"
+
+[profile.release]
+panic = "unwind"
+lto = "thin"
+strip = "symbols"
