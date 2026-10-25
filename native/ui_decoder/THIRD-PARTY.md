@@ -11,7 +11,7 @@ Cargo.lock. No proprietary Oodle implementation or game asset is distributed.
 
 `valuable` 0.1.1 also omits its MIT license file from its crate archive. The
 build retains the upstream license from the matching repository tag:
-<https://github.com/tokio-rs/valuable/blob/valuable-0.1.1/LICENSE>.
+<https://github.com/tokio-rs/valuable/blob/v0.1.1/LICENSE>.
 
 The build copies each resolved registry crate's license, notice, and copyright
 files into the bundle's `licenses/UI-decoder` directory. Individual dependency

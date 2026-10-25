@@ -80,6 +80,21 @@ class NativeDecoderIntegrationTests(unittest.TestCase):
 
 
 class NativeDecoderBuildTests(unittest.TestCase):
+    def test_pinned_dependency_without_bundled_license_retains_upstream_terms(self):
+        from tools.build_ui_decoder import collect_licenses
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory) / 'valuable'
+            crate.mkdir()
+            destination = Path(directory) / 'licenses'
+            collect_licenses(root, [{'name': 'valuable', 'version': '0.1.1',
+                                    'source': 'registry+example', 'license': 'MIT',
+                                    'manifest_path': str(crate / 'Cargo.toml')}], destination)
+            license_text = (destination / 'valuable-0.1.1/LICENSE').read_text()
+            self.assertIn('Copyright (c) 2021 Valuable Contributors', license_text)
+            self.assertTrue((destination / 'Rust-LICENSE-MIT').is_file())
+            self.assertTrue((destination / 'Rust-LICENSE-APACHE').is_file())
+
     def test_bundle_rejects_legacy_game_artwork(self):
         from tools.build_manager import reject_bundled_game_artwork
         with tempfile.TemporaryDirectory() as directory:
