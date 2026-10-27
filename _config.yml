@@ -1,0 +1,27 @@
+# GitHub Pages site: https://gaiser147.github.io/PUKEY-Mods/
+title: PUKEY Mods
+description: "UE4SS Lua mods for the PUKEY GODDESS SHOT TRICK Steam demo: FreeCam, LightTools, FamSwap, and MovieSwap."
+
+# Generates /sitemap.xml for search engines.
+plugins:
+  - jekyll-sitemap
+
+defaults:
+  # Keep the Search Console verification file out of the sitemap.
+  - scope:
+      path: google8b1bd6d82712654d.html
+    values:
+      sitemap: false
+  # Internal planning and design notes are not useful search results.
+  - scope:
+      path: docs/superpowers
+    values:
+      sitemap: false
+  - scope:
+      path: DESIGN.md
+    values:
+      sitemap: false
+  - scope:
+      path: PRODUCT.md
+    values:
+      sitemap: false
