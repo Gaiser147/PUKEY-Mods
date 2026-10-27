@@ -1,5 +1,7 @@
 # GitHub Pages site: https://gaiser147.github.io/PUKEY-Mods/
 title: PUKEY Mods
+# Shown after the site title on the home page in search results.
+tagline: "Mod Manager & UE4SS mods for PUKEY GODDESS SHOT TRICK"
 description: "UE4SS Lua mods for the PUKEY GODDESS SHOT TRICK Steam demo: FreeCam, LightTools, FamSwap, and MovieSwap."
 
 # Generates /sitemap.xml for search engines.
