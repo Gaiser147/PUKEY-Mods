@@ -9,3 +9,9 @@
   linux.classList.add('primary');
   win.parentNode.insertBefore(linux, win);
 })();
+
+// Show key columns in guide tables with the manager's key-value styling.
+document.querySelectorAll('.prose table').forEach(function (table) {
+  var first = table.querySelector('th');
+  if (first && first.textContent.trim() === 'Key') table.classList.add('key-table');
+});

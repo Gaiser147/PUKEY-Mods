@@ -2,7 +2,6 @@
 layout: base
 title: PUKEY Mods
 description: "UE4SS mods for the PUKEY GODDESS SHOT TRICK Steam demo: FreeCam, LightTools, FamSwap and MovieSwap, installed and configured with the PUKEY Mod Manager for Windows and Linux."
-scripts: true
 ---
 {%- assign repo = site.github.repository_url | default: 'https://github.com/Gaiser147/PUKEY-Mods' -%}
 {%- assign releases_url = repo | append: '/releases' -%}
@@ -34,7 +33,6 @@ scripts: true
       <span class="ribbon">{% if release.prerelease %}Prerelease{% else %}Release{% endif %} · {{ release.published_at | date: "%-d %b %Y" }}</span>
       <h1 id="release-title">Mod Manager {{ version }}</h1>
       {%- else %}
-      <span class="ribbon">Windows &amp; Linux</span>
       <h1 id="release-title">PUKEY Mod Manager</h1>
       {%- endif %}
       <p class="pitch">Pick the game folder, install UE4SS, choose your mods. The manager installs, updates and configures FreeCam, LightTools, FamSwap and MovieSwap for the PUKEY GODDESS SHOT TRICK demo.</p>
@@ -76,12 +74,14 @@ scripts: true
 <section class="section" aria-labelledby="steps-title">
   <h2 id="steps-title">From download to F5 in four steps</h2>
   <p class="lede">The manager does the file work. Each mod installs on its own, so you only add what you want.</p>
-  <ol class="steps">
-    <li><h3>Extract and start</h3><p>Unpack the whole folder and run <code>PUKEY-Mod-Manager</code>. Keep <code>_internal</code> beside it.</p></li>
-    <li><h3>Find the game</h3><p>Let <strong>Find in Steam</strong> locate the demo, or browse to its folder yourself.</p></li>
-    <li><h3>Install UE4SS</h3><p>Close the game. The manager downloads UE4SS from its official release and disables the incompatible example mods.</p></li>
-    <li><h3>Choose your mods</h3><p>Install a mod, adjust its settings and keys, save, and start the demo through Steam.</p></li>
-  </ol>
+  <div class="sheet steps-sheet">
+    <ol class="steps">
+      <li><div><h3>Extract and start</h3><p>Unpack the whole folder and run the app. Keep <code>_internal</code> beside it.</p></div><span class="controls"><span class="control">PUKEY-Mod-Manager</span></span></li>
+      <li><div><h3>Find the game</h3><p>Let the manager locate the Steam demo, or browse to its folder yourself.</p></div><span class="controls"><span class="control">Find in Steam</span><span class="control">Browse…</span></span></li>
+      <li><div><h3>Install UE4SS</h3><p>Close the game. The manager downloads UE4SS from its official release and disables the incompatible example mods.</p></div><span class="controls"><span class="control">Install UE4SS</span></span></li>
+      <li><div><h3>Choose your mods</h3><p>Install a mod, adjust its settings and keys, then start the demo through Steam.</p></div><span class="controls"><span class="control">Install mod</span><span class="control">Save settings</span></span></li>
+    </ol>
+  </div>
 </section>
 
 <section class="section" aria-labelledby="facts-title">
@@ -96,7 +96,7 @@ scripts: true
         <li><strong>Linux and Steam Deck:</strong> the manager runs there and manages the Windows game files. Gameplay under Proton is unverified.</li>
       </ul>
     </div>
-    <div class="sheet">
+    <div class="aside">
       <h3>Good to know</h3>
       <ul>
         <li>Game or UE4SS updates can require mod changes. The full game has not been tested.</li>
