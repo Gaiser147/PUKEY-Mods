@@ -5,6 +5,7 @@ description: "UE4SS Lua mods for the PUKEY GODDESS SHOT TRICK Steam demo: FreeCa
 # Generates /sitemap.xml for search engines.
 plugins:
   - jekyll-sitemap
+  - jekyll-seo-tag
 
 defaults:
   # Keep the Search Console verification file out of the sitemap.
@@ -23,5 +24,10 @@ defaults:
       sitemap: false
   - scope:
       path: PRODUCT.md
+    values:
+      sitemap: false
+  # The home page replaces the README on the site.
+  - scope:
+      path: README.md
     values:
       sitemap: false

@@ -1,0 +1,54 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<link href="https://fonts.googleapis.com/css2?family=Amarante&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{background:#111012;color:#f0ece8;font:16px/1.5 "Segoe UI","DejaVu Sans",system-ui,sans-serif;position:relative}
+body::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");pointer-events:none;z-index:5}
+a{color:inherit;text-decoration:none}
+.amar{font-family:Amarante,serif;font-weight:400}
+.osw{font-family:Oswald,sans-serif}
+.muted{color:#b5adb5}
+.mint{color:#02e5a2}
+.sheet{position:relative;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0035 0.009' numOctaves='5' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.20  0 0 0 0 0.16  0 0 0 0 0.22  0 0 0 1.5 -0.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"), #1a161c;background-size:1600px 1000px;border-radius:3px;
+  box-shadow:0 18px 40px -18px #000, inset 0 0 0 1px #3a313c, inset 0 0 60px 10px #0b0a0c}
+.ribbon{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath fill='%2302e5a2' d='M6 9 L30 4 L120 7 L250 3 L372 6 L394 2 L388 14 L398 22 L389 33 L397 44 L384 51 L392 58 L300 55 L170 58 L60 54 L12 57 L18 47 L3 38 L13 29 L2 19 Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;color:#101113}
+.pink{display:inline-flex;align-items:center;gap:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 56' preserveAspectRatio='none'%3E%3Cpath fill='%23ff0060' d='M8 6 L60 3 L170 5 L292 2 L288 16 L297 28 L290 41 L296 53 L190 51 L80 54 L4 52 L10 39 L2 27 L9 15 Z'/%3E%3Cpath fill='none' stroke='%23ff5c93' stroke-width='1.2' d='M14 10 L150 8 L284 7'/%3E%3C/svg%3E") center/100% 100% no-repeat;color:#fff;
+  font-family:Oswald,sans-serif;font-size:21px;letter-spacing:.02em;padding:12px 34px 13px}
+.ghost{display:inline-flex;align-items:center;gap:10px;border:1px solid #766a78;border-radius:3px;padding:10px 20px;font-size:15px;background:#18151a}
+.nav{position:absolute;top:0;left:0;right:0;height:84px;display:flex;align-items:center;gap:36px;padding:0 64px;z-index:3}
+.nav .brand{font-family:Amarante,serif;font-size:30px;margin-right:auto}
+.nav a.l{font-family:Oswald,sans-serif;font-size:16px;color:#b5adb5}
+.key{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:0 10px;border:1px solid #514452;border-radius:3px;background:#080709;font-family:Oswald,sans-serif;font-size:16px;color:#02e5a2}
+</style>
+<style>
+.stage{position:absolute;left:64px;right:64px;top:112px;height:600px}
+.stage .sheet{position:absolute;inset:0;overflow:hidden}
+.ver{position:absolute;left:-20px;bottom:-110px;font-size:560px;line-height:1;color:#2a2230;letter-spacing:-.02em}
+.copy{position:absolute;left:520px;top:70px;width:720px}
+.copy .tag{display:inline-block;padding:6px 28px 8px 22px;font-family:Oswald;font-size:17px}
+.copy h1{font-size:76px;line-height:1.02;margin:22px 0 18px}
+.copy p{font-size:19px;color:#d9d2d6;max-width:600px}
+.acts{display:flex;gap:16px;align-items:center;margin-top:34px}
+.note{margin-top:16px;font-size:14px}
+.ledger{position:absolute;left:64px;right:64px;top:744px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid #514452}
+.ledger div{padding:18px 26px 0 0}
+.ledger b{font-family:Oswald;font-weight:400;font-size:22px;display:flex;justify-content:space-between;align-items:center;padding-right:26px}
+.ledger span{font-size:14px;color:#b5adb5;display:block;margin-top:6px;max-width:270px}
+</style></head><body><nav class="nav"><span class="brand">PUKEY Mods</span><a class="l" href="#">Mods</a><a class="l" href="#">Guides</a><a class="l" href="#">Troubleshooting</a><a class="l" href="#">GitHub</a></nav>
+<section class="stage"><div class="sheet">
+ <div class="ver amar">0.5</div>
+ <div class="copy">
+  <span class="tag ribbon">Prerelease · 27 Oct 2026</span>
+  <h1 class="amar">Mod Manager 0.5</h1>
+  <p>Pick the game folder, install UE4SS, choose your mods. The manager installs, updates and configures FreeCam, LightTools, FamSwap and MovieSwap for the PUKEY GODDESS SHOT TRICK demo.</p>
+  <div class="acts"><a class="pink" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg>Windows ZIP</a><a class="ghost" href="#">Linux x86-64 tar.gz</a><a class="ghost" href="#">Install manually</a></div>
+  <p class="note muted">No Python needed. Extract the whole folder and run PUKEY-Mod-Manager. Proton gameplay is unverified.</p>
+ </div>
+</div></section>
+<section class="ledger">
+ <div><b>FreeCam <span class="key">F5</span></b><span>Free camera, teleport, five camera bookmarks per map.</span></div>
+ <div><b>LightTools <span class="key">F1–F4</span></b><span>Floodlight, headlight, fog, shadows and post-processing.</span></div>
+ <div><b>FamSwap <span class="key">F8</span></b><span>Your own still images behind the counter and at the table.</span></div>
+ <div><b>MovieSwap <span class="key">F11</span></b><span>Custom MP4 replacements for the game's videos.</span></div>
+</section></body></html>
