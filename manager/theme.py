@@ -63,6 +63,8 @@ QLineEdit { placeholder-text-color: #b5adb5; }
 QLineEdit:disabled, QComboBox:disabled, QDoubleSpinBox:disabled { color: #a69aa6; border-color: #514452; background: #201a22; }
 QWidget#keyRow QComboBox { color: #02e5a2; font-family: Oswald; font-size: 12pt; }
 QWidget#keyRow QComboBox:disabled { color: #a69aa6; }
+QWidget#keyRow QComboBox[conflict="true"] { border-color: #ff8ba5; }
+QLabel#keyConflict { color: #ff8ba5; font-size: 9pt; }
 QDoubleSpinBox { padding-right: 23px; }
 QDoubleSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 22px; height: 17px; border-left: 1px solid #514452; }
 QDoubleSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 22px; height: 17px; border-left: 1px solid #514452; }
