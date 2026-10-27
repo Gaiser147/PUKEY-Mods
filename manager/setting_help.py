@@ -20,7 +20,15 @@ def key_label(code):
 
 
 def default_label(field):
-    return key_label(str(field['default'])) if field['type'] == 'key' else str(field['default'])
+    from .fields import number_text
+    if field['type'] == 'key':
+        return key_label(str(field['default']))
+    return number_text(field['default']) if field['type'] == 'number' else str(field['default'])
+
+
+def range_label(field):
+    from .fields import number_text
+    return number_text(field['min']) + ' – ' + number_text(field['max'])
 
 
 def explanation(field):
@@ -31,7 +39,7 @@ def explanation(field):
             lines.append(value + ': ' + description)
     lines.append('Default: ' + default_label(field))
     if field['type'] == 'number':
-        lines.append('Range: ' + str(field['min']) + ' – ' + str(field['max']))
+        lines.append('Range: ' + range_label(field))
     lines.append('Save settings, then restart the game to apply changes.')
     return '\n\n'.join(lines)
 

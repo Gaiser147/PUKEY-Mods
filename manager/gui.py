@@ -5,7 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 import sys
 
-from PySide6.QtCore import Qt, QThread, Signal, QTimer, QStandardPaths, QUrl
+from PySide6.QtCore import Qt, QEvent, QThread, Signal, QTimer, QStandardPaths, QUrl
 from PySide6.QtGui import QDesktopServices, QIcon, QPixmap, QCloseEvent, QFontDatabase, QFont
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
@@ -16,12 +16,17 @@ from PySide6.QtWidgets import (
 
 from . import __version__
 from .theme import stylesheet, load_fonts
-from .setting_help import HelpButton, default_label, key_label
+from .fields import ChoiceField, KeyCaptureButton, NumberField
+from .setting_help import HelpButton, default_label, key_label, range_label
 from .widgets import icon, state_icon, mod_icon, ModDelegate, PreviewCanvas, DialoguePanel, ModNavigation, OrnamentHeading, texture
 
 REPOSITORY = 'https://github.com/Gaiser147/PUKEY-Mods'
 PROTON_OPTION = 'WINEDLLOVERRIDES="dwmapi.dll=n,b" %command%'
 COMPACT_HEIGHT = 800
+# Wide windows keep settings next to their labels and give the extra room to the key sheet.
+SETTINGS_MAX_WIDTH = 760
+WIDE_WIDTH = 1600
+KEY_SHEET_WIDTH = (280, 340)
 # Qt ignores the style sheet's left padding on spin boxes; match the 9px inset of other fields.
 SPIN_TEXT_INSET = 8
 KEYS = ([f'F{i}' for i in range(1, 13)] + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') +
@@ -306,6 +311,7 @@ class Window(QMainWindow):
         self.tabs = QTabWidget()
         self.settings_scroll = QScrollArea()
         self.settings_scroll.setWidgetResizable(True)
+        self.settings_scroll.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.keys_scroll = QScrollArea()
         self.keys_scroll.setWidgetResizable(True)
         self.media_scroll = QScrollArea()
@@ -316,7 +322,7 @@ class Window(QMainWindow):
         self.sheets.addWidget(self.main_panel, 1)
 
         self.keys_panel = DialoguePanel()
-        self.keys_panel.setFixedWidth(280)
+        self.keys_panel.setFixedWidth(KEY_SHEET_WIDTH[0])
         key_layout = QVBoxLayout(self.keys_panel)
         key_layout.setContentsMargins(18, 16, 18, 16)
         key_layout.setSpacing(8)
@@ -540,13 +546,23 @@ class Window(QMainWindow):
             self.logo_label.setPixmap(QPixmap())
             self.logo_label.setText('PUKEY')
         else:
-            self.logo_label.setPixmap(logo.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio,
-                                                 Qt.TransformationMode.SmoothTransformation))
+            # Scale to device pixels so the logo stays sharp at 150 % and 200 % display scaling.
+            ratio = self.devicePixelRatioF()
+            scaled = logo.scaled(round(width * ratio), round(height * ratio), Qt.AspectRatioMode.KeepAspectRatio,
+                                 Qt.TransformationMode.SmoothTransformation)
+            scaled.setDevicePixelRatio(ratio)
+            self.logo_label.setPixmap(scaled)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if (self.height() < COMPACT_HEIGHT) != (self.logo_label.height() < 108):
             self.update_logo()
+        self.keys_panel.setFixedWidth(KEY_SHEET_WIDTH[self.width() >= WIDE_WIDTH])
+
+    def event(self, event):
+        if event.type() == QEvent.Type.DevicePixelRatioChange:
+            self.update_logo()
+        return super().event(event)
 
     def refresh_game_theme_presence(self):
         from .game_assets import game_present
@@ -802,6 +818,8 @@ class Window(QMainWindow):
         self.reset_buttons = {}
         self.help_buttons = {}
         self.key_warnings = {}
+        self.capture_buttons = {}
+        self.field_notes = {}
         self._settings_error = False
         self._dirty = False
         self._image_bytes = None
@@ -839,7 +857,7 @@ class Window(QMainWindow):
                 widget.toggled.connect(lambda checked, target=widget: target.setText('On' if checked else 'Off'))
                 widget.toggled.connect(self.mark_dirty)
             elif field['type'] == 'number':
-                widget = QDoubleSpinBox()
+                widget = NumberField()
                 numbers = [field['min'], field['max'], field['default'], field.get('step', 1), value]
                 digits = max(max(0, -Decimal(str(number)).normalize().as_tuple().exponent) for number in numbers)
                 widget.setDecimals(min(16, digits))
@@ -853,7 +871,7 @@ class Window(QMainWindow):
                 widget.setMaxLength(4096)
                 widget.textChanged.connect(self.mark_dirty)
             elif field['type'] == 'key':
-                widget = QComboBox()
+                widget = ChoiceField()
                 for code in KEYS:
                     widget.addItem(key_label(code), code)
                 if widget.findData(str(value)) < 0:
@@ -862,12 +880,13 @@ class Window(QMainWindow):
                 widget.currentIndexChanged.connect(self.mark_dirty)
                 widget.currentIndexChanged.connect(self.update_key_conflicts)
             else:
-                widget = QComboBox()
+                widget = ChoiceField()
                 widget.addItems(field['options'])
                 widget.setCurrentText(str(value))
                 widget.currentTextChanged.connect(self.mark_dirty)
             widget.setAccessibleName(field['label'])
-            widget.setToolTip('Default: ' + default_label(field))
+            widget.setToolTip(('Range ' + range_label(field) + ' · ' if field['type'] == 'number' else '') +
+                              'Default ' + default_label(field))
             widget.setFixedWidth(116 if field['type'] == 'key' else 180)
             row = QWidget()
             row.setObjectName('keyRow' if field['type'] == 'key' else 'fieldRow')
@@ -895,6 +914,14 @@ class Window(QMainWindow):
                 top.addWidget(help_button)
                 bottom = QHBoxLayout()
                 bottom.addWidget(widget, 1)
+                capture = KeyCaptureButton(field['label'])
+                capture.toggled.connect(lambda listening, name=field['label']: listening and self.notice(
+                    'Press a key for ' + name + '. Esc cancels.'))
+                capture.captured.connect(lambda code, target=widget: target.setCurrentIndex(target.findData(code)))
+                capture.rejected.connect(lambda key: self.notice(
+                    key + ' cannot be assigned here. Choose a key from the list.'))
+                self.capture_buttons[field['key']] = capture
+                bottom.addWidget(capture)
                 bottom.addStretch()
                 bottom.addWidget(reset)
                 stack.addLayout(top)
@@ -907,7 +934,18 @@ class Window(QMainWindow):
                 bindings.addWidget(row)
                 key_count += 1
             else:
-                row_layout.addWidget(label, 1)
+                caption = QVBoxLayout()
+                caption.setSpacing(2)
+                caption.addWidget(label)
+                if field['type'] == 'number':
+                    # Corrections are explained where they happen instead of silently replacing input.
+                    note = text_label('', 'fieldNote')
+                    note.hide()
+                    caption.addWidget(note)
+                    widget.adjusted.connect(lambda message, target=note: (target.setText(message),
+                                                                          target.setVisible(bool(message))))
+                    self.field_notes[field['key']] = note
+                row_layout.addLayout(caption, 1)
                 row_layout.addWidget(help_button)
                 row_layout.addWidget(widget)
                 row_layout.addWidget(reset)
@@ -928,6 +966,7 @@ class Window(QMainWindow):
         else:
             self.controls_label = text_label('', 'muted')
         bindings.addStretch()
+        self.settings_page.setMaximumWidth(SETTINGS_MAX_WIDTH)
         self.settings_scroll.setWidget(self.settings_page)
         self.keys_scroll.setWidget(self.keys_page)
         while self.tabs.count() > 1:
@@ -1180,7 +1219,7 @@ class Window(QMainWindow):
             controls.setContentsMargins(0, 0, 0, 0)
             controls.setSpacing(4)
             controls.addWidget(text_label('Replace', 'sectionTitle'))
-            self.image_targets = QComboBox()
+            self.image_targets = ChoiceField()
             self.image_targets.setAccessibleName('Image target')
             for target in mod['images']:
                 self.image_targets.addItem(target['label'], target)
@@ -1201,18 +1240,20 @@ class Window(QMainWindow):
             adjustments = QFormLayout()
             adjustments.setVerticalSpacing(8)
             adjustments.setHorizontalSpacing(12)
-            self.image_scale = QDoubleSpinBox()
+            self.image_scale = NumberField()
             self.image_scale.setRange(1, 500)
             self.image_scale.setSuffix(' %')
-            self.image_top = QDoubleSpinBox()
+            self.image_top = NumberField()
             self.image_top.setRange(-100, 100)
             self.image_top.setSuffix(' %')
-            self.image_x = QDoubleSpinBox()
+            self.image_x = NumberField()
             self.image_x.setRange(-100, 100)
             self.image_x.setSuffix(' %')
             self.remove_green = QCheckBox('Remove green screen')
             for label, widget in [('Size', self.image_scale), ('Top offset', self.image_top), ('Horizontal offset', self.image_x)]:
                 widget.setAccessibleName(label)
+                widget.setDecimals(0)
+                widget.adjusted.connect(lambda message, name=label: message and self.notice(name + ': ' + message))
                 widget.setFixedWidth(112)
                 widget.lineEdit().setTextMargins(SPIN_TEXT_INSET, 0, 0, 0)
                 adjustments.addRow(label, widget)
@@ -1249,7 +1290,7 @@ class Window(QMainWindow):
             layout.addWidget(text_label('Replace a game video', 'sectionTitle'))
             layout.addWidget(text_label('Choose the original clip, then import your replacement MP4. '
                                         'Clips you already replaced are marked with a check.', 'muted'))
-            self.video_choice = QComboBox()
+            self.video_choice = ChoiceField()
             self.video_choice.setAccessibleName('Video to replace')
             group = None
             for path in targets:

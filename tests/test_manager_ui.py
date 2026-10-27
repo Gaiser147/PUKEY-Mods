@@ -292,6 +292,100 @@ class ManagerUiTests(unittest.TestCase):
         self.assertEqual(window.field_value(toggle), 'F2')
         window._dirty = False
 
+    def input_window(self):
+        mod = {'id': 'Example', 'name': 'Example', 'version': '1.0', 'description': '', 'controls': '',
+               'settings': [{'key': 'Boost', 'label': 'Boost', 'type': 'number', 'default': 4, 'min': 1, 'max': 20, 'step': 0.5},
+                            {'key': 'Sens', 'label': 'Sensitivity', 'type': 'number', 'default': 0.15, 'min': 0.01, 'max': 5, 'step': 0.01},
+                            {'key': 'Mode', 'label': 'Mode', 'type': 'enum', 'default': 'a', 'options': ['a', 'b']},
+                            {'key': 'Toggle', 'label': 'Toggle', 'type': 'key', 'default': 'F5'}]}
+        window = self.make_window(SimpleNamespace(mods=[mod], files={}, revision='test'))
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': True, 'update': False, 'managed': True},
+            settings=lambda mod: {'Boost': 4, 'Sens': 0.15, 'Mode': 'a', 'Toggle': 'F5'})
+        window.render_details()
+        window.show()
+        window.activateWindow()
+        QTest.qWait(20)
+        self.addCleanup(setattr, window, '_dirty', False)
+        return window
+
+    def test_wheel_scrolls_past_unfocused_fields(self):
+        from PySide6.QtCore import QPoint, QPointF, Qt
+        from PySide6.QtGui import QWheelEvent
+        window = self.input_window()
+        window.mod_list.setFocus()
+        for key in ('Boost', 'Mode', 'Toggle'):
+            widget = window.settings_widgets[key]
+            before = window.field_value(widget)
+            event = QWheelEvent(QPointF(5, 5), widget.mapToGlobal(QPointF(5, 5)), QPoint(0, 0), QPoint(0, -120),
+                                Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier, Qt.ScrollPhase.NoScrollPhase, False)
+            QApplication.sendEvent(widget, event)
+            self.assertEqual(window.field_value(widget), before, key + ' must not change without focus')
+        self.assertFalse(window._dirty)
+
+    def test_number_fields_accept_both_decimal_marks_and_explain_corrections(self):
+        from PySide6.QtCore import QLocale, Qt
+        window = self.input_window()
+        boost, sens = window.settings_widgets['Boost'], window.settings_widgets['Sens']
+        for widget in (boost, sens):
+            widget.setLocale(QLocale(QLocale.Language.German))
+        for text, expected in (('1.5', 1.5), ('2,5', 2.5)):
+            boost.setFocus()
+            boost.selectAll()
+            QTest.keyClicks(boost, text)
+            QTest.keyClick(boost, Qt.Key.Key_Return)
+            self.assertEqual(boost.value(), expected)
+        boost.selectAll()
+        QTest.keyClicks(boost, '99999')
+        QTest.keyClick(boost, Qt.Key.Key_Return)
+        self.assertEqual(boost.value(), 20)
+        self.assertFalse(window.field_notes['Boost'].isHidden())
+        self.assertIn('Maximum is 20', window.field_notes['Boost'].text())
+        sens.setFocus()
+        sens.selectAll()
+        QTest.keyClicks(sens, '0.005')
+        QTest.keyClick(sens, Qt.Key.Key_Return)
+        self.assertEqual(sens.value(), 0.01)
+        self.assertIn('Rounded', window.field_notes['Sens'].text())
+        self.assertIn('Range', sens.toolTip())
+
+    def test_help_numbers_follow_the_field_locale(self):
+        from PySide6.QtCore import QLocale
+        from manager.setting_help import explanation
+        previous = QLocale()
+        QLocale.setDefault(QLocale(QLocale.Language.German))
+        self.addCleanup(QLocale.setDefault, previous)
+        text = explanation({'key': 'Sens', 'label': 'Sensitivity', 'type': 'number', 'default': 0.15, 'min': 0.01, 'max': 5})
+        self.assertIn('Default: 0,15', text)
+        self.assertIn('Range: 0,01 – 5', text)
+
+    def test_keys_can_be_assigned_by_pressing_them(self):
+        from PySide6.QtCore import Qt
+        window = self.input_window()
+        capture, toggle = window.capture_buttons['Toggle'], window.settings_widgets['Toggle']
+        capture.click()
+        self.assertTrue(capture.isChecked())
+        QTest.keyClick(capture, Qt.Key.Key_F7)
+        self.assertEqual(window.field_value(toggle), 'F7')
+        self.assertFalse(capture.isChecked())
+        capture.click()
+        QTest.keyClick(capture, Qt.Key.Key_Escape)
+        self.assertEqual(window.field_value(toggle), 'F7')
+        capture.click()
+        QTest.keyClick(capture, Qt.Key.Key_5, Qt.KeyboardModifier.KeypadModifier)
+        self.assertEqual(window.field_value(toggle), 'F7')
+        self.assertIn('cannot be assigned', window.status_label.text())
+
+    def test_wide_windows_keep_settings_near_their_labels(self):
+        window = self.input_window()
+        window.resize(2000, 1000)
+        QTest.qWait(20)
+        self.assertLessEqual(window.settings_page.width(), 760)
+        self.assertEqual(window.keys_panel.width(), 340)
+        window.resize(1280, 860)
+        QTest.qWait(20)
+        self.assertEqual(window.keys_panel.width(), 280)
+
     def test_fractional_values_do_not_round_to_step_precision(self):
         mod = {'id': 'Example', 'name': 'Example', 'description': '', 'controls': '',
                'settings': [{'key': 'Intensity', 'label': 'Intensity', 'type': 'number',
