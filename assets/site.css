@@ -15,7 +15,6 @@
 :root {
   --mint: #02e5a2;
   --pink: #ff0060;
-  --pink-soft: #ff8ba5;
   --ground: #111012;
   --ink-on-mint: #101113;
   --text: #f0ece8;
@@ -26,6 +25,8 @@
   --well: #080709;
   --button: #18151a;
   --hover: #302630;
+  --pressed: #422135;
+  --rule: #2a2330;
   --border: #766a78;
   --divider: #514452;
   --rim: #3a313c;
@@ -118,7 +119,7 @@ code, kbd, pre { font-family: var(--mono); font-size: 0.9em; }
   transition: background-color 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
 }
 .btn:hover { background: var(--hover); border-color: var(--text); }
-.btn:active { background: #422135; }
+.btn:active { background: var(--pressed); }
 .btn svg { width: 19px; height: 19px; flex: none; }
 .btn small { color: var(--muted); font-size: 13px; }
 .btn.primary {
@@ -185,7 +186,7 @@ code, kbd, pre { font-family: var(--mono); font-size: 0.9em; }
 .ledger a {
   display: block; height: 100%; padding: 20px 26px 22px 0; text-decoration: none;
 }
-.ledger li + li a { padding-left: 26px; border-left: 1px solid #2a2330; }
+.ledger li + li a { padding-left: 26px; border-left: 1px solid var(--rule); }
 .ledger .name { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ledger h2 { font: 400 23px/1.2 var(--label); margin: 0; }
 .ledger .keys { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
@@ -277,7 +278,7 @@ main { flex: 1 0 auto; }
 .prose strong { color: var(--text); }
 .prose a { color: var(--text); text-decoration: underline; text-decoration-color: var(--mint); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .prose a:hover { color: var(--mint); }
-.prose code { background: var(--well); color: var(--text); border: 1px solid #2a2330; border-radius: 2px; padding: 0.08em 0.35em; font-size: 0.86em; }
+.prose code { background: var(--well); color: var(--text); border: 1px solid var(--rule); border-radius: 2px; padding: 0.08em 0.35em; font-size: 0.86em; }
 .prose pre { background: var(--well); border: 1px solid var(--divider); border-radius: 3px; padding: 16px 18px; overflow-x: auto; line-height: 1.5; }
 .prose pre code { background: none; border: 0; padding: 0; font-size: 14px; }
 .prose blockquote { margin-left: 0; padding: 4px 0 4px 18px; border-left: 1px solid var(--mint); color: var(--muted); }
@@ -286,7 +287,7 @@ main { flex: 1 0 auto; }
 .prose .table-wrap { overflow-x: auto; margin: 0 0 1.2em; }
 .prose table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .prose th { text-align: left; font: 400 15px/1.3 var(--label); color: var(--muted); letter-spacing: 0.02em; padding: 0 16px 10px 0; border-bottom: 1px solid var(--border); }
-.prose td { padding: 10px 16px 10px 0; border-bottom: 1px solid #2a2330; vertical-align: top; }
+.prose td { padding: 10px 16px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .prose td:first-child { color: var(--text); white-space: nowrap; }
 .prose table.key-table td:first-child .key { height: auto; min-height: 30px; padding: 3px 9px; white-space: normal; text-align: left; }
 .doc-foot { margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font: 400 15px/1.3 var(--label); color: var(--muted); }
@@ -298,7 +299,7 @@ main { flex: 1 0 auto; }
   .release .sheet { grid-template-columns: minmax(0, 0.32fr) minmax(0, 1fr); }
   .ledger ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ledger li:nth-child(3) a { padding-left: 0; border-left: 0; }
-  .ledger li:nth-child(n+3) { border-top: 1px solid #2a2330; }
+  .ledger li:nth-child(n+3) { border-top: 1px solid var(--rule); }
   .guides { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
@@ -319,6 +320,6 @@ main { flex: 1 0 auto; }
   .controls { grid-column: 2; justify-content: flex-start; }
   .facts .aside { padding-top: 0; }
   .ledger li + li a { padding-left: 0; border-left: 0; }
-  .ledger li + li { border-top: 1px solid #2a2330; }
+  .ledger li + li { border-top: 1px solid var(--rule); }
   .prose td:first-child { white-space: normal; }
 }

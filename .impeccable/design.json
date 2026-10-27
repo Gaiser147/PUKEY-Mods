@@ -1,94 +1,588 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T11:07:04Z",
+  "generatedAt": "2026-10-27T15:54:02Z",
   "title": "Design System: PUKEY Mod Manager",
   "extensions": {
     "colorMeta": {
-      "mint": {"role": "primary", "displayName": "Selected ribbon mint"},
-      "pink": {"role": "secondary", "displayName": "Action pink"},
-      "workspace": {"role": "neutral", "displayName": "Near-black workspace"},
-      "text": {"role": "neutral", "displayName": "Off-white dialogue text"},
-      "muted": {"role": "neutral", "displayName": "Supporting lilac-gray"},
-      "border": {"role": "neutral", "displayName": "Control-edge lilac-gray"}
+      "mint": {
+        "role": "primary",
+        "displayName": "Selected ribbon mint"
+      },
+      "pink": {
+        "role": "secondary",
+        "displayName": "Action pink"
+      },
+      "workspace": {
+        "role": "neutral",
+        "displayName": "Near-black workspace"
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Off-white dialogue text"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Supporting lilac-gray"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Control-edge lilac-gray"
+      },
+      "text-soft": {
+        "role": "neutral",
+        "displayName": "Soft dialogue text",
+        "purpose": "Web pitch, ledes, steps and long reading."
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet plum-black",
+        "purpose": "Web colour under the authored smoke texture."
+      },
+      "rim": {
+        "role": "neutral",
+        "displayName": "Rim plum",
+        "purpose": "One-pixel inset edge closing a web sheet."
+      },
+      "ghost": {
+        "role": "neutral",
+        "displayName": "Ghost plum",
+        "purpose": "Decorative aria-hidden release numeral only; never readable text."
+      }
     },
     "typographyMeta": {
-      "brand": {"displayName": "Amarante brand", "purpose": "Game-adjacent masthead identity."},
-      "title": {"displayName": "Amarante mod heading", "purpose": "Selected-mod identity."},
-      "accent": {"displayName": "Oswald accent", "purpose": "Primary actions, section labels, and tabs."},
-      "body": {"displayName": "Neutral desktop body", "purpose": "Readable descriptions, paths, and ordinary controls."}
+      "brand": {
+        "displayName": "Amarante brand",
+        "purpose": "Game-adjacent masthead identity."
+      },
+      "title": {
+        "displayName": "Amarante mod heading",
+        "purpose": "Selected-mod identity."
+      },
+      "accent": {
+        "displayName": "Oswald accent",
+        "purpose": "Primary actions, section labels, and tabs."
+      },
+      "body": {
+        "displayName": "Neutral desktop body",
+        "purpose": "Readable descriptions, paths, and ordinary controls."
+      },
+      "web-display": {
+        "displayName": "Web release headline",
+        "purpose": "Home release h1."
+      },
+      "web-headline": {
+        "displayName": "Web section headline",
+        "purpose": "Home section h2; guide h1/h2 use the same face at their own clamps."
+      },
+      "web-wordmark": {
+        "displayName": "Web wordmark",
+        "purpose": "Masthead and footer 'PUKEY Mods'."
+      },
+      "web-title": {
+        "displayName": "Web Oswald title",
+        "purpose": "Step titles, guide h3, mod names (23px in the ledger)."
+      },
+      "web-label": {
+        "displayName": "Web Oswald label",
+        "purpose": "Navigation, key chips, breadcrumbs, table headers."
+      },
+      "web-action": {
+        "displayName": "Web primary action",
+        "purpose": "Pink-stroke download label."
+      },
+      "web-body": {
+        "displayName": "Web body",
+        "purpose": "Default page text."
+      },
+      "web-reading": {
+        "displayName": "Web guide reading",
+        "purpose": "Guide prose within 70ch."
+      }
     },
-    "shadows": [], "motion": [], "breakpoints": [],
+    "shadows": [
+      {
+        "name": "web-sheet-lift",
+        "value": "0 24px 48px -28px #000, inset 0 0 0 1px #3a313c, inset 0 0 80px 12px #0b0a0c",
+        "purpose": "Web smoke sheets only: soft drop, rim, inner vignette. Native Qt has no custom shadows."
+      }
+    ],
+    "motion": [
+      {
+        "name": "web-ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All web transitions and the two release-page entrances."
+      },
+      {
+        "name": "web-state",
+        "value": "160ms",
+        "purpose": "Link, nav and button colour changes."
+      },
+      {
+        "name": "web-chip-fill",
+        "value": "220ms",
+        "purpose": "Key chip fill on ledger hover/focus."
+      },
+      {
+        "name": "web-ribbon-brush",
+        "value": "1000ms, 200ms delay, once",
+        "purpose": "Release ribbon mask wipe; reduced-motion users get none."
+      },
+      {
+        "name": "web-numeral-settle",
+        "value": "1400ms, once",
+        "purpose": "Ghost release numeral fade/rise; reduced-motion users get none."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "web-medium",
+        "value": "max-width: 1100px",
+        "purpose": "Ledger and guide index to two columns; release sheet's empty column narrows."
+      },
+      {
+        "name": "web-narrow",
+        "value": "max-width: 720px",
+        "purpose": "Single column; scrolling nav strip with fade; stacked release actions."
+      }
+    ],
     "nativeQt": {
-      "platform": "native-desktop", "operatingSystems": ["Windows", "Linux"],
-      "toolkit": "PySide6.QtWidgets", "primitiveSource": "DESIGN.md YAML frontmatter",
-      "sources": ["manager/theme.py", "manager/widgets.py", "manager/gui.py"],
+      "platform": "native-desktop",
+      "operatingSystems": [
+        "Windows",
+        "Linux"
+      ],
+      "toolkit": "PySide6.QtWidgets",
+      "primitiveSource": "DESIGN.md YAML frontmatter",
+      "sources": [
+        "manager/theme.py",
+        "manager/widgets.py",
+        "manager/gui.py"
+      ],
       "visualAuthority": "User-selected C: local/design-studies/game-ui-2026-10-25/C-dialogue-desk.png in the original workspace",
-      "dimensionUnit": "Qt logical pixel", "fontUnit": "point",
+      "dimensionUnit": "Qt logical pixel",
+      "fontUnit": "point",
       "fontPolicy": "Bundled Amarante and Oswald (OFL); Segoe UI body with DejaVu Sans fallback.",
-      "windowTokens": {"initial": [1280, 860], "minimum": [900, 640], "visualChecks": [[1280, 860], [1024, 768]], "splitter": false},
+      "windowTokens": {
+        "initial": [
+          1280,
+          860
+        ],
+        "minimum": [
+          900,
+          640
+        ],
+        "visualChecks": [
+          [
+            1280,
+            860
+          ],
+          [
+            1024,
+            768
+          ]
+        ],
+        "splitter": false
+      },
       "layoutTokens": {
-        "outerMarginsLTRB": [24, 14, 24, 10], "outerGap": 10, "logoSize": [188, 108], "mastheadGap": 22,
-        "setupMarginsLTRB": [12, 7, 12, 8], "setupGap": 5,
-        "sheetGap": 18, "mainSheetMarginsLTRB": [22, 18, 22, 17], "mainSheetGap": 9,
-        "keySheetWidth": 280, "keySheetMarginsLTRB": [18, 16, 18, 16], "keySheetGap": 8,
-        "fieldRowMinimumHeight": 56, "fieldRowMarginsLTRB": [0, 8, 0, 8], "fieldRowGap": 12,
-        "fieldWidth": 180, "keyControlWidth": 116, "keyRowMinimumHeight": 84, "settingActionSize": [26, 28],
-        "imageOptionsWidthRange": [270, 310], "imageColumnGap": 22, "imageAdjustmentWidth": 112,
-        "footerMarginsLTRB": [8, 1, 8, 1], "footerGap": 10, "statusMinimumHeight": 24, "progressMaximumHeight": 3
+        "outerMarginsLTRB": [
+          24,
+          14,
+          24,
+          10
+        ],
+        "outerGap": 10,
+        "logoSize": [
+          188,
+          108
+        ],
+        "mastheadGap": 22,
+        "setupMarginsLTRB": [
+          12,
+          7,
+          12,
+          8
+        ],
+        "setupGap": 5,
+        "sheetGap": 18,
+        "mainSheetMarginsLTRB": [
+          22,
+          18,
+          22,
+          17
+        ],
+        "mainSheetGap": 9,
+        "keySheetWidth": 280,
+        "keySheetMarginsLTRB": [
+          18,
+          16,
+          18,
+          16
+        ],
+        "keySheetGap": 8,
+        "fieldRowMinimumHeight": 56,
+        "fieldRowMarginsLTRB": [
+          0,
+          8,
+          0,
+          8
+        ],
+        "fieldRowGap": 12,
+        "fieldWidth": 180,
+        "keyControlWidth": 116,
+        "keyRowMinimumHeight": 84,
+        "settingActionSize": [
+          26,
+          28
+        ],
+        "imageOptionsWidthRange": [
+          270,
+          310
+        ],
+        "imageColumnGap": 22,
+        "imageAdjustmentWidth": 112,
+        "footerMarginsLTRB": [
+          8,
+          1,
+          8,
+          1
+        ],
+        "footerGap": 10,
+        "statusMinimumHeight": 24,
+        "progressMaximumHeight": 3
       },
       "controlTokens": {
-        "buttonMinimumHeight": 27, "fieldMinimumHeight": 26, "imageFieldMinimumHeight": 23,
-        "borderWidth": 1, "focusBorderWidth": 2, "focusColor": "{colors.mint}",
-        "primaryMinimumHeight": 28, "primaryMinimumWidth": 165,
-        "primaryBorderImage": {"file": "<verified-local-game-ui-cache>/button-pink.png", "borderWidth": 6, "slicesTRBL": [18, 28, 18, 28], "repeat": "stretch stretch"},
-        "primaryHoverBacking": "#691039", "headerActionHoverBacking": "#211a24",
-        "checkboxIndicatorSize": [17, 17], "scrollbarWidth": 8, "tabUnderlineWidth": 2,
-        "popupSurface": "{colors.button}", "dialogSurface": "{colors.panel}",
-        "popupSelection": "{colors.mint}", "popupSelectedText": "{colors.workspace}"
+        "buttonMinimumHeight": 27,
+        "fieldMinimumHeight": 26,
+        "imageFieldMinimumHeight": 23,
+        "borderWidth": 1,
+        "focusBorderWidth": 2,
+        "focusColor": "{colors.mint}",
+        "primaryMinimumHeight": 28,
+        "primaryMinimumWidth": 165,
+        "primaryBorderImage": {
+          "file": "<verified-local-game-ui-cache>/button-pink.png",
+          "borderWidth": 6,
+          "slicesTRBL": [
+            18,
+            28,
+            18,
+            28
+          ],
+          "repeat": "stretch stretch"
+        },
+        "primaryHoverBacking": "#691039",
+        "headerActionHoverBacking": "#211a24",
+        "checkboxIndicatorSize": [
+          17,
+          17
+        ],
+        "scrollbarWidth": 8,
+        "tabUnderlineWidth": 2,
+        "popupSurface": "{colors.button}",
+        "dialogSurface": "{colors.panel}",
+        "popupSelection": "{colors.mint}",
+        "popupSelectedText": "{colors.workspace}"
       },
       "navigationTokens": {
-        "height": 68, "rowHeightHint": 57, "fixedCellWidth": 224, "wheel": "Horizontal scrolling without selection changes", "statusLine": "Enabled/Disabled/Not installed plus independent update state",
+        "height": 68,
+        "rowHeightHint": 57,
+        "fixedCellWidth": 224,
+        "wheel": "Horizontal scrolling without selection changes",
+        "statusLine": "Enabled/Disabled/Not installed plus independent update state",
         "flow": "LeftToRight; no wrapping; horizontal scroll as needed; native keyboard selection",
-        "cellInsetsLTRB": [4, 5, 9, 5], "labelInset": 19, "hoverRibbonOpacity": 0.22,
-        "selectedTexture": "<verified-local-game-ui-cache>/ribbon.png", "focus": "1px inset dashed outline; dark when selected, mint otherwise"
+        "cellInsetsLTRB": [
+          4,
+          5,
+          9,
+          5
+        ],
+        "labelInset": 19,
+        "hoverRibbonOpacity": 0.22,
+        "selectedTexture": "<verified-local-game-ui-cache>/ribbon.png",
+        "focus": "1px inset dashed outline; dark when selected, mint otherwise"
       },
-      "sheetTexture": {"widget": "DialoguePanel", "sourceEdge": 48, "destinationInset": 16, "paint": "Nine-region texture painting; preserve irregular corners."},
+      "sheetTexture": {
+        "widget": "DialoguePanel",
+        "sourceEdge": 48,
+        "destinationInset": 16,
+        "paint": "Nine-region texture painting; preserve irregular corners."
+      },
       "previewTokens": {
-        "widget": "PreviewCanvas", "minimum": [160, 220], "sizeHint": [300, 260], "imageInset": 14,
-        "canvasColor": "{colors.preview}", "checkerboardCell": 12, "checkerboardColors": ["#38343d", "#514c55"],
+        "widget": "PreviewCanvas",
+        "minimum": [
+          160,
+          220
+        ],
+        "sizeHint": [
+          300,
+          260
+        ],
+        "imageInset": 14,
+        "canvasColor": "{colors.preview}",
+        "checkerboardCell": 12,
+        "checkerboardColors": [
+          "#38343d",
+          "#514c55"
+        ],
         "scaling": "KeepAspectRatio with SmoothTransformation"
       },
       "components": [
-        {"name": "Pink primary action", "widget": "QPushButton", "refersTo": "button-primary", "states": "Textured default; dark pink hover; image-free muted disabled; mint keyboard focus."},
-        {"name": "Secondary action", "widget": "QPushButton", "refersTo": "button-secondary", "states": "Dark default, lighter hover, plum pressed; explicit Enabled/Disabled activation text."},
-        {"name": "Native field", "widgets": ["QLineEdit", "QComboBox", "QDoubleSpinBox"], "refersTo": "field", "states": "Dark well; mint focus; muted disabled; opaque dark combo popup."},
-        {"name": "Horizontal mod ribbon", "widget": "ModNavigation + ModDelegate", "refersTo": "navigation-selected", "states": "Mint textured selection, faint textured hover, elided label, dashed keyboard focus."},
-        {"name": "Editable shortcut sheet", "widget": "DialoguePanel + OrnamentHeading + QScrollArea", "states": "Mint Oswald key combos; independent scroll; shares save with main settings."},
-        {"name": "Persistent footer", "widget": "QFrame#detailFooter", "states": "Settings save; image preview/restore/apply; video import/restore; visibility and availability follow capability and actual state."},
-        {"name": "Dark dialogs", "widgets": ["QDialog", "QMessageBox"], "states": "Opaque dark surface with readable text and themed native buttons."}
+        {
+          "name": "Pink primary action",
+          "widget": "QPushButton",
+          "refersTo": "button-primary",
+          "states": "Textured default; dark pink hover; image-free muted disabled; mint keyboard focus."
+        },
+        {
+          "name": "Secondary action",
+          "widget": "QPushButton",
+          "refersTo": "button-secondary",
+          "states": "Dark default, lighter hover, plum pressed; explicit Enabled/Disabled activation text."
+        },
+        {
+          "name": "Native field",
+          "widgets": [
+            "QLineEdit",
+            "QComboBox",
+            "QDoubleSpinBox"
+          ],
+          "refersTo": "field",
+          "states": "Dark well; mint focus; muted disabled; opaque dark combo popup."
+        },
+        {
+          "name": "Horizontal mod ribbon",
+          "widget": "ModNavigation + ModDelegate",
+          "refersTo": "navigation-selected",
+          "states": "Mint textured selection, faint textured hover, elided label, dashed keyboard focus."
+        },
+        {
+          "name": "Editable shortcut sheet",
+          "widget": "DialoguePanel + OrnamentHeading + QScrollArea",
+          "states": "Mint Oswald key combos; independent scroll; shares save with main settings."
+        },
+        {
+          "name": "Persistent footer",
+          "widget": "QFrame#detailFooter",
+          "states": "Settings save; image preview/restore/apply; video import/restore; visibility and availability follow capability and actual state."
+        },
+        {
+          "name": "Dark dialogs",
+          "widgets": [
+            "QDialog",
+            "QMessageBox"
+          ],
+          "states": "Opaque dark surface with readable text and themed native buttons."
+        }
       ],
       "assets": {
-        "rasterFiles": ["logo.png", "dialogue.png", "sheet.png", "ribbon.png", "button-pink.png", "heading.png", "divider.png"],
-        "rasterRoot": "<verified-local-game-ui-cache>", "provenance": "manager/assets/game-ui-layout.json",
+        "rasterFiles": [
+          "logo.png",
+          "dialogue.png",
+          "sheet.png",
+          "ribbon.png",
+          "button-pink.png",
+          "heading.png",
+          "divider.png"
+        ],
+        "rasterRoot": "<verified-local-game-ui-cache>",
+        "provenance": "manager/assets/game-ui-layout.json",
         "distributionStatus": "No original game images are shipped or committed. Read only from a present selected supported installation; cache is integrity-checked and installation-gated. Plain native fallback otherwise.",
-        "fonts": ["manager/assets/fonts/Amarante-Regular.ttf", "manager/assets/fonts/Oswald.ttf"], "fontLicense": "OFL; accompanying license files in manager/assets/fonts/",
+        "fonts": [
+          "manager/assets/fonts/Amarante-Regular.ttf",
+          "manager/assets/fonts/Oswald.ttf"
+        ],
+        "fontLicense": "OFL; accompanying license files in manager/assets/fonts/",
         "icons": "24px painted line icons with 1.7px rounded strokes at DPR 2; check/chevron SVGs."
       },
-      "behavior": {"shortcuts": {"browse": "Ctrl+O", "refresh": "Ctrl+R", "save": "Ctrl+S"}, "scrolling": "Settings and keys scroll independently; image and video footer actions persist.", "accessibility": "Native keyboard activation, labelled editable fields, explicit state text, visible focus, accessible icon names.", "progress": "Qt indeterminate animation; no custom motion tokens."},
-      "evidence": {"captures": ["scratch/dialogue-qa/installed-1280.png", "scratch/dialogue-qa/installed-1024.png", "scratch/dialogue-qa/media-1024.png", "scratch/dialogue-qa/videos-1024.png", "scratch/dialogue-qa/empty-linux-controls-1024.png", "scratch/dialogue-qa/error-1024.png"], "scope": "Native visual evidence; does not establish Linux runtime or gameplay compatibility."},
+      "behavior": {
+        "shortcuts": {
+          "browse": "Ctrl+O",
+          "refresh": "Ctrl+R",
+          "save": "Ctrl+S"
+        },
+        "scrolling": "Settings and keys scroll independently; image and video footer actions persist.",
+        "accessibility": "Native keyboard activation, labelled editable fields, explicit state text, visible focus, accessible icon names.",
+        "progress": "Qt indeterminate animation; no custom motion tokens."
+      },
+      "evidence": {
+        "captures": [
+          "scratch/dialogue-qa/installed-1280.png",
+          "scratch/dialogue-qa/installed-1024.png",
+          "scratch/dialogue-qa/media-1024.png",
+          "scratch/dialogue-qa/videos-1024.png",
+          "scratch/dialogue-qa/empty-linux-controls-1024.png",
+          "scratch/dialogue-qa/error-1024.png"
+        ],
+        "scope": "Native visual evidence; does not establish Linux runtime or gameplay compatibility."
+      },
       "previewFormat": "Native widget metadata; no HTML/CSS replicas or fabricated web/iOS declaration."
+    },
+    "web": {
+      "platform": "GitHub Pages (Jekyll)",
+      "sources": [
+        "assets/site.css",
+        "assets/site.js",
+        "_layouts/base.html",
+        "_layouts/default.html",
+        "index.html"
+      ],
+      "directionContract": ".impeccable/surfaces/index-html.md",
+      "tokenSource": "CSS custom properties on :root in assets/site.css",
+      "tokenAliases": {
+        "--ground": "workspace",
+        "--well": "control",
+        "--button": "button",
+        "--hover": "hover",
+        "--panel": "panel",
+        "--border": "border",
+        "--divider": "divider",
+        "--text-soft": "text-soft",
+        "--sheet": "sheet",
+        "--rim": "rim",
+        "--ghost": "ghost"
+      },
+      "fontStacks": {
+        "display": "Amarante, Georgia, serif",
+        "label": "Oswald, Arial Narrow, sans-serif",
+        "body": "Segoe UI, system-ui, -apple-system, DejaVu Sans, sans-serif",
+        "mono": "ui-monospace, Cascadia Mono, Consolas, DejaVu Sans Mono, monospace"
+      },
+      "layoutTokens": {
+        "contentMax": "1312px",
+        "guideMax": "860px",
+        "gutter": "clamp(16px, 4.4vw, 64px)",
+        "sectionGap": "clamp(80px, 10vw, 136px)",
+        "proseMeasure": "70ch",
+        "focus": "2px solid mint, offset 3px"
+      },
+      "materials": {
+        "root": "assets/img/",
+        "files": {
+          "smoke.svg": "Tileable feTurbulence smoke, 1200x800, for sheets",
+          "grain.svg": "Fine film grain over the page ground",
+          "ribbon.svg": "Mint torn-edge ribbon for state tags and active key chips",
+          "stroke.svg": "Pink torn-edge primary action",
+          "stroke-hover.svg": "Primary action hover (#d90051 fill)"
+        },
+        "provenance": "Authored for this site; no game artwork or extracted textures."
+      },
+      "fonts": {
+        "files": [
+          "assets/fonts/amarante.woff2",
+          "assets/fonts/oswald.woff2"
+        ],
+        "license": "OFL; assets/fonts/Amarante-OFL.txt and assets/fonts/Oswald-OFL.txt",
+        "loading": "preload + font-display: swap"
+      },
+      "behavior": {
+        "platformDownload": "site.js promotes the Linux build to the pink stroke on desktop Linux; Windows ZIP is the default.",
+        "keyTables": "site.js renders the first column of guide tables headed 'Key' as key chips."
+      },
+      "drift": []
     }
   },
-  "components": [],
+  "components": [
+    {
+      "name": "Web primary download",
+      "kind": "button",
+      "refersTo": "web-button-primary",
+      "description": "The one pink torn-edge action per page.",
+      "html": "<a class=\"ds-web-primary\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12m0 0-5-5m5 5 5-5M4 20h16\"/></svg>Windows <small>ZIP</small></a>",
+      "css": ".ds-web-primary { display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 12px 36px 13px 30px; background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 56' preserveAspectRatio='none'%3E%3Cpath fill='%23ff0060' d='M8 6 60 3l110 2 122-3-4 14 9 12-7 13 6 12-106-2-110 3-76-2 6-13-8-12 7-12Z'/%3E%3C/svg%3E\") center / 100% 100% no-repeat; color: #fff; font: 700 22px/1.1 Oswald, 'Arial Narrow', sans-serif; letter-spacing: 0.02em; text-decoration: none; } .ds-web-primary small { font: inherit; } .ds-web-primary:hover { background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 56' preserveAspectRatio='none'%3E%3Cpath fill='%23d90051' d='M8 6 60 3l110 2 122-3-4 14 9 12-7 13 6 12-106-2-110 3-76-2 6-13-8-12 7-12Z'/%3E%3C/svg%3E\"); } .ds-web-primary:active { transform: translateY(1px); } .ds-web-primary:focus-visible { outline: 2px solid #02e5a2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Web secondary button",
+      "kind": "button",
+      "refersTo": "web-button-secondary",
+      "description": "Dark secondary download or route.",
+      "html": "<a class=\"ds-web-btn\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12m0 0-5-5m5 5 5-5M4 20h16\"/></svg>Linux <small>x86-64 tar.gz</small></a>",
+      "css": ".ds-web-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 20px; border: 1px solid #766a78; border-radius: 3px; background: #18151a; color: #f0ece8; font: 15px/1.2 'Segoe UI', system-ui, sans-serif; text-decoration: none; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1), border-color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-web-btn small { color: #b5adb5; font-size: 13px; } .ds-web-btn:hover { background: #302630; border-color: #f0ece8; } .ds-web-btn:active { background: #422135; } .ds-web-btn:focus-visible { outline: 2px solid #02e5a2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Web key chip",
+      "kind": "chip",
+      "refersTo": "web-key-chip",
+      "description": "Key name as a dark well with mint Oswald text; fills with the ribbon when its row is hovered or focused.",
+      "html": "<a class=\"ds-web-keyrow\" href=\"#\"><span class=\"ds-web-key\">F5</span><span class=\"ds-web-key\">F6</span></a>",
+      "css": ".ds-web-keyrow { display: inline-flex; gap: 6px; text-decoration: none; } .ds-web-key { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 34px; padding: 0 9px; border: 1px solid #514452; border-radius: 3px; background: #080709; color: #02e5a2; font: 400 16px/1 Oswald, 'Arial Narrow', sans-serif; transition: background-color 220ms cubic-bezier(0.16,1,0.3,1), color 220ms cubic-bezier(0.16,1,0.3,1); } .ds-web-keyrow:hover .ds-web-key, .ds-web-keyrow:focus-visible .ds-web-key { background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath fill='%2302e5a2' d='M6 9 30 4l90 3 130-4 122 3 22-4-6 12 10 8-9 11 8 11-13 7 8 7-92-3-130 3-110-4-48 3 6-10-15-9 10-9L2 19Z'/%3E%3C/svg%3E\") center / 100% 100% no-repeat; border-color: transparent; color: #101113; } .ds-web-keyrow:focus-visible { outline: 2px solid #02e5a2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Web state ribbon",
+      "kind": "chip",
+      "refersTo": "web-ribbon",
+      "description": "Mint torn-edge tag carrying real state (release type and date).",
+      "html": "<span class=\"ds-web-ribbon\">Prerelease · 25 Oct 2026</span>",
+      "css": ".ds-web-ribbon { display: inline-block; padding: 7px 28px 9px 24px; background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath fill='%2302e5a2' d='M6 9 30 4l90 3 130-4 122 3 22-4-6 12 10 8-9 11 8 11-13 7 8 7-92-3-130 3-110-4-48 3 6-10-15-9 10-9L2 19Z'/%3E%3C/svg%3E\") center / 100% 100% no-repeat; color: #101113; font: 400 17px/1.2 Oswald, 'Arial Narrow', sans-serif; }"
+    },
+    {
+      "name": "Web control name",
+      "kind": "chip",
+      "description": "Dashed label naming a manager control inside instructions; not interactive.",
+      "html": "<span class=\"ds-web-control\">Install UE4SS</span>",
+      "css": ".ds-web-control { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px; border: 1px dashed #514452; border-radius: 3px; color: #b5adb5; font: 400 15px/1.2 Oswald, 'Arial Narrow', sans-serif; letter-spacing: 0.01em; white-space: nowrap; }"
+    },
+    {
+      "name": "Web navigation",
+      "kind": "nav",
+      "refersTo": "web-nav-link",
+      "description": "Masthead links; current page underlined in mint.",
+      "html": "<nav class=\"ds-web-nav\"><a href=\"#\">Mods</a><a href=\"#\" aria-current=\"page\">Mod Manager</a><a href=\"#\">Installation</a></nav>",
+      "css": ".ds-web-nav { display: flex; gap: 4px 30px; } .ds-web-nav a { padding: 8px 0; border-bottom: 2px solid transparent; color: #b5adb5; font: 400 16px/1 Oswald, 'Arial Narrow', sans-serif; letter-spacing: 0.01em; text-decoration: none; transition: color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-web-nav a:hover { color: #f0ece8; } .ds-web-nav a[aria-current] { color: #f0ece8; border-bottom-color: #02e5a2; } .ds-web-nav a:focus-visible { outline: 2px solid #02e5a2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Web smoke sheet",
+      "kind": "card",
+      "refersTo": "web-sheet",
+      "description": "Smoke sheet with rim and soft lift (smoke texture omitted in preview).",
+      "html": "<div class=\"ds-web-sheet\"><h3>Requirements</h3><p>Windows 10 or 11 with the Steam demo.</p></div>",
+      "css": ".ds-web-sheet { padding: 32px; background: #1a161c; border-radius: 3px; box-shadow: 0 24px 48px -28px #000, inset 0 0 0 1px #3a313c, inset 0 0 80px 12px #0b0a0c; color: #d9d2d6; font: 15.5px/1.6 'Segoe UI', system-ui, sans-serif; } .ds-web-sheet h3 { margin: 0 0 14px; color: #f0ece8; font: 400 26px/1.15 Amarante, Georgia, serif; } .ds-web-sheet p { margin: 0; }"
+    }
+  ],
   "narrative": {
     "northStar": "PUKEY's dialogue desk",
     "overview": "The user-selected Design C brings PUKEY's dialogue language into an editable native desktop workbench: smoky black sheets, a mint selection ribbon, pink primary actions, and off-white ornamental headings. Neutral body type keeps settings, paths, and installation state readable. The approved Qt study is the visual authority; current implementation is recorded in `manager/theme.py`, `manager/widgets.py`, and `manager/gui.py`.",
-    "keyCharacteristics": ["Horizontal mod navigation above textured dialogue sheets.", "Independently scrolling settings and editable keybindings, sharing one save action.", "Persistent image and video actions, explicit installation state, and visible keyboard focus.", "Native PySide6/Qt Widgets for Windows and Linux; English interface copy."],
-    "rules": [
-      {"name": "Visible State", "body": "Pair color with explicit text, selection, focus, or control state.", "section": "colors"},
-      {"name": "Persistent Action", "body": "Keep saving, image preview/apply/restore, and video import/restore accessible outside scrolling content. Show the actions appropriate to the active capability and actual state.", "section": "layout"}
+    "keyCharacteristics": [
+      "Horizontal mod navigation above textured dialogue sheets.",
+      "Independently scrolling settings and editable keybindings, sharing one save action.",
+      "Persistent image and video actions, explicit installation state, and visible keyboard focus.",
+      "Native PySide6/Qt Widgets for Windows and Linux; English interface copy.",
+      "GitHub Pages web surface: authored SVG smoke, grain, mint ribbon and pink stroke; no game artwork."
     ],
-    "dos": ["**Do** reuse the native Qt tokens, textured sheets, mint navigation, and Amarante/Oswald hierarchy.", "**Do** preserve explicit state, labelled editable controls, visible focus, and persistent actions at checked desktop sizes.", "**Do** retain extraction metadata in `manager/assets/game-ui-layout.json` and font licenses in `manager/assets/fonts/`."],
-    "donts": ["**Don't** describe HTML replicas, iOS controls, or web breakpoints as implemented native UI.", "**Don't** infer Linux runtime or gameplay compatibility from visual and offscreen checks.", "**Don't** ship original game artwork. Read it only from a present supported installation; a local cache alone must not enable it."]
+    "rules": [
+      {
+        "name": "Visible State",
+        "body": "Pair color with explicit text, selection, focus, or control state.",
+        "section": "colors"
+      },
+      {
+        "name": "Persistent Action",
+        "body": "Keep saving, image preview/apply/restore, and video import/restore accessible outside scrolling content. Show the actions appropriate to the active capability and actual state.",
+        "section": "layout"
+      },
+      {
+        "name": "One Pink Stroke",
+        "body": "Each page shows at most one pink primary action; every other action is a dark secondary button.",
+        "section": "colors"
+      },
+      {
+        "name": "Reading Face",
+        "body": "Amarante and Oswald never set paragraphs, list items or table cells; long text stays in the system sans.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "**Do** reuse the native Qt tokens, textured sheets, mint navigation, and Amarante/Oswald hierarchy.",
+      "**Do** preserve explicit state, labelled editable controls, visible focus, and persistent actions at checked desktop sizes.",
+      "**Do** retain extraction metadata in `manager/assets/game-ui-layout.json` and font licenses in `manager/assets/fonts/`.",
+      "**Do** build web surfaces from `assets/site.css` tokens, the authored SVG materials and the self-hosted font subsets; keep the OFL texts beside the fonts.",
+      "**Do** keep long web reading in the system sans on dimmed sheets with soft dialogue text."
+    ],
+    "donts": [
+      "**Don't** describe HTML replicas, iOS controls, or web breakpoints as implemented native UI.",
+      "**Don't** infer Linux runtime or gameplay compatibility from visual and offscreen checks.",
+      "**Don't** ship original game artwork. Read it only from a present supported installation; a local cache alone must not enable it.",
+      "**Don't** put game artwork, extracted textures or screenshots containing them on the web site; web materials are authored SVGs only.",
+      "**Don't** use the mint ribbon as a decorative section label; it marks selection or real state."
+    ]
   }
 }
