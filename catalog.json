@@ -6,7 +6,7 @@
             "name": "FreeCam",
             "version": "1.1.0",
             "description": "Explore scenes with a free camera, teleport the player, and save camera positions per map.",
-            "controls": "F5: camera on/off; F6: mode; W/A/S/D: move; mouse: look; E/Space: up; Q/Ctrl: down; Shift: boost. Page Up/Down: speed; Home: reset speed; T: teleport player. Ctrl+1-5: save positions; 1-5: recall. Keys below can be changed.",
+            "controls": "F5: camera on/off; F6: mode; W/A/S/D: move; mouse: look; E/Space: up; Q/Ctrl: down; Shift: boost. Page Up/Down: speed; Home: reset speed; T: teleport player. Ctrl+1-5: save positions; 1-5: recall. The keys above can be changed.",
             "files": [
                 "Scripts/main.lua",
                 "README.md"
@@ -116,7 +116,7 @@
             "name": "LightTools",
             "version": "1.1.0",
             "description": "Adjust scene lighting, camera light, fog, post-processing, shadows, and exposure.",
-            "controls": "F1: floodlight; F2: camera light; F3: fog; F4: post-processing; F7: shadows. +/-: exposure; Ctrl +/-: light intensity; Num0/End: reset. Keys below can be changed.",
+            "controls": "F1: floodlight; F2: camera light; F3: fog; F4: post-processing; F7: shadows. +/-: exposure; Ctrl +/-: light intensity; Num0/End: reset. The keys above can be changed.",
             "files": [
                 "Scripts/main.lua",
                 "README.md"
@@ -214,7 +214,7 @@
             "name": "FamSwap",
             "version": "1.1.0",
             "description": "Replace Fam behind the bar and at the table with your own images. Missing images keep the original.",
-            "controls": "F8: replacement on/off; F9: reload images. Table mode always replaces videos; idle only replaces Fam while no Fam video is playing. Keys below can be changed.",
+            "controls": "F8: replacement on/off; F9: reload images. Table mode always replaces videos; idle only replaces Fam while no Fam video is playing. The keys above can be changed.",
             "files": [
                 "Scripts/main.lua",
                 "README.md",
@@ -296,7 +296,7 @@
             "name": "MovieSwap",
             "version": "1.1.0",
             "description": "Replace known game videos with your own MP4 files while keeping the original when a replacement is missing.",
-            "controls": "F11: rescan replacement videos. Video imports copy the selected file into the matching game-relative path. Fam videos need a pure green background; preserve the original dimensions, codec, frame rate, and duration when possible. Keys below can be changed.",
+            "controls": "F11: rescan replacement videos. Video imports copy the selected file into the matching game-relative path. Fam videos need a pure green background; preserve the original dimensions, codec, frame rate, and duration when possible. The keys above can be changed.",
             "files": [
                 "Scripts/main.lua",
                 "README.md",

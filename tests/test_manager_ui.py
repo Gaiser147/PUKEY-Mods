@@ -72,6 +72,25 @@ class ManagerUiTests(unittest.TestCase):
         self.assertIsNone(window.theme_directory)
         self.assertTrue(window.logo_label.pixmap().isNull())
 
+    def test_game_theme_paints_primary_action_artwork(self):
+        from PIL import Image
+        window = self.make_window()
+        win64 = window.preferences_path.parent / 'Game'
+        window.manager = SimpleNamespace(win64=win64)
+        cache = window.preferences_path.parent / 'game ui'
+        cache.mkdir()
+        for name in ('logo', 'dialogue', 'sheet', 'ribbon', 'heading', 'divider'):
+            Image.new('RGBA', (160, 160), (20, 35, 30, 255)).save(cache / (name + '.png'))
+        Image.new('RGBA', (120, 60), (0, 200, 40, 255)).save(cache / 'button-pink.png')
+        with patch('manager.game_assets.game_present', return_value=True):
+            self.assertTrue(window.apply_game_theme(cache, win64))
+        button = window.save_button
+        button.setEnabled(True)
+        button.resize(200, 40)
+        button.ensurePolished()
+        pixel = button.grab().toImage().pixelColor(100, 20)
+        self.assertGreater(pixel.green(), 150, 'The enabled primary action must show its button artwork')
+
     def test_image_preparation_actions_fit_the_small_desktop_view(self):
         from manager.catalog import Snapshot
         snapshot = Snapshot.from_directory(Path(__file__).resolve().parents[1])

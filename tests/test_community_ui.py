@@ -99,7 +99,7 @@ class CommunityUiTests(unittest.TestCase):
         window._source_packages['community-a'] = external
         window.current_mod = dict(mod, _source_id='community-a')
         window.render_details()
-        self.assertEqual(window.video_choice.currentText(), 'Bacchus/Movie/Fam/test.mp4')
+        self.assertEqual(window.video_choice.currentData(), 'Bacchus/Movie/Fam/test.mp4')
 
     def test_external_image_apply_uses_source_bound_manager(self):
         window = self.window()

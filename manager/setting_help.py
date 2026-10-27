@@ -7,13 +7,29 @@ from PySide6.QtWidgets import QToolButton, QToolTip, QFrame, QVBoxLayout, QLabel
 from .widgets import icon
 
 
+DIGITS = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE']
+
+
+def key_label(code):
+    """Name a UE4SS key code the way the keyboard does; the code itself is still what gets saved."""
+    if code in DIGITS:
+        return str(DIGITS.index(code))
+    if len(code) == 1 or (code[:1] == 'F' and code[1:].isdigit()):
+        return code
+    return code.replace('_', ' ').title()
+
+
+def default_label(field):
+    return key_label(str(field['default'])) if field['type'] == 'key' else str(field['default'])
+
+
 def explanation(field):
     lines = [field['label'], field.get('description', 'Adjust this mod preference.')]
     for value in field.get('options', []):
         description = field.get('option_descriptions', {}).get(value)
         if description:
             lines.append(value + ': ' + description)
-    lines.append('Default: ' + str(field['default']))
+    lines.append('Default: ' + default_label(field))
     if field['type'] == 'number':
         lines.append('Range: ' + str(field['min']) + ' – ' + str(field['max']))
     lines.append('Save settings, then restart the game to apply changes.')
