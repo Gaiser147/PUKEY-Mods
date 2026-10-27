@@ -29,6 +29,23 @@ KEYS = ([f'F{i}' for i in range(1, 13)] + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') +
          'ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'])
 
 
+def describe_error(error):
+    """Plain message plus the next step that fits this failure, not a generic suffix."""
+    from urllib.error import HTTPError, URLError
+    if isinstance(error, HTTPError):
+        return 'The download server answered with HTTP {}. Try again later.'.format(error.code)
+    if isinstance(error, (TimeoutError, ConnectionError, URLError)):
+        return 'The download server could not be reached. Check your internet connection and try again.'
+    name = getattr(error, 'filename', None)
+    if isinstance(error, PermissionError):
+        return (name or 'A file') + ' is locked or read-only. Close the game and try again.'
+    if isinstance(error, FileNotFoundError):
+        return (name or 'A required file') + ' was not found. Check the game folder and try again.'
+    if isinstance(error, OSError):
+        return (error.strerror or str(error)) + (' (' + name + ')' if name else '') + '. Check the folder and try again.'
+    return str(error) or type(error).__name__
+
+
 class Job(QThread):
     progress = Signal(str)
     result = Signal(object)
@@ -42,7 +59,7 @@ class Job(QThread):
         try:
             self.result.emit(self.operation(self.progress.emit))
         except Exception as error:
-            self.error.emit(str(error) or type(error).__name__)
+            self.error.emit(describe_error(error))
 
 
 def text_label(text='', name=None):
@@ -76,6 +93,7 @@ class Window(QMainWindow):
         self.manager = None
         self.current_mod = None
         self.settings_widgets = {}
+        self._other_keys = {}
         self._busy = False
         self._dirty = False
         self._job = None
@@ -336,9 +354,19 @@ class Window(QMainWindow):
         status = QHBoxLayout()
         status.setContentsMargins(8, 0, 6, 0)
         status.setSpacing(16)
+        self.status_icon = QLabel()
+        self.status_icon.setPixmap(icon('alert', '#ff8ba5').pixmap(16, 16))
+        self.status_icon.setFixedSize(16, 16)
+        self.status_icon.setAccessibleName('Error')
+        self.status_icon.hide()
+        message = QHBoxLayout()
+        message.setSpacing(8)
+        message.addWidget(self.status_icon, 0, Qt.AlignmentFlag.AlignVCenter)
+        self._error_shown = False
         self.status_label = text_label('Ready. Personal files are kept during updates.', 'operationStatus')
         self.status_label.setMinimumHeight(24)
-        status.addWidget(self.status_label, 1)
+        message.addWidget(self.status_label, 1)
+        status.addLayout(message, 1)
         self.detail_footer = QFrame()
         self.detail_footer.setObjectName('detailFooter')
         self.save_row = QHBoxLayout(self.detail_footer)
@@ -429,8 +457,9 @@ class Window(QMainWindow):
                 self.snapshot = self._source_packages.get('official')
                 self.source_label.setText('Saved library')
             self.populate()
-            self.notice('Saved library loaded.' if not errors else 'Some saved sources could not be loaded: ' + '; '.join(errors), bool(errors))
-        self.run_job('Loading saved mod sources…', load, accepted)
+            self.notice('Saved library loaded.' if not errors else 'Some saved sources could not be loaded: ' + '; '.join(errors),
+                        bool(errors), background=True)
+        self.run_job('Loading saved mod sources…', load, accepted, True)
 
     def add_mods(self):
         if not self.allow_discard(): return
@@ -536,25 +565,31 @@ class Window(QMainWindow):
             return
         def accepted(directory):
             if generation == self._theme_generation and self.apply_game_theme(directory, win64):
-                self.notice('Game interface artwork loaded from your installation.')
+                self.notice('Game interface artwork loaded from your installation.', background=True)
         self.run_job('Reading interface artwork from the installed game…',
-            lambda progress: extract_theme(win64, self.preferences_path.parent / 'game-ui', progress), accepted)
+            lambda progress: extract_theme(win64, self.preferences_path.parent / 'game-ui', progress), accepted, True)
 
-    def notice(self, message, error=False):
+    def notice(self, message, error=False, background=False):
+        """Background work (detection, artwork) never replaces an error the user has not acted on yet."""
+        if background and self._error_shown and not error:
+            return
+        self._error_shown = error
         self.status_label.setText(message)
+        self.status_label.setToolTip(message)
         self.status_label.setStyleSheet('color: #ff8ba5;' if error else '')
+        self.status_icon.setVisible(error)
 
-    def run_job(self, label, operation, callback=None):
+    def run_job(self, label, operation, callback=None, background=False):
         if self._busy:
             return
         self._busy = True
-        self.notice(label)
+        self.notice(label, background=background)
         self.progress_bar.show()
         self.update_controls()
         worker = Job(operation, self)
         self._job = worker
-        worker.progress.connect(self.notice)
-        worker.error.connect(lambda message: self.notice(message + ' Check the folder or connection and try again.', True))
+        worker.progress.connect(lambda message: self.notice(message, background=background))
+        worker.error.connect(lambda message: self.notice(message, True))
         def success(value):
             try:
                 if callback:
@@ -564,7 +599,7 @@ class Window(QMainWindow):
                         self.refresh_status_rows()
                     else:
                         self.populate()
-                    self.notice('Done. Restart the game to apply changes.')
+                    self.notice('Done. Restart the game to apply changes.', background=background)
             except Exception as error:
                 self.notice(str(error), True)
         worker.result.connect(success)
@@ -600,7 +635,7 @@ class Window(QMainWindow):
                     official = self.source_store.update('official', official)
                 else:
                     self.source_store.add(official, REPOSITORY, [m['id'] for m in official.mods], 'official')
-            except Exception as error: errors.append('Official catalogue: ' + str(error))
+            except Exception as error: errors.append('Official catalogue: ' + describe_error(error))
             for record in self.source_store.records:
                 if record['id'] == 'official': continue
                 selected[record['id']] = record['selected_ids']
@@ -608,7 +643,7 @@ class Window(QMainWindow):
                     packages[record['id']] = (self.source_store.load(record['id']) if record['kind'] == 'local'
                                               else self.source_store.refresh(record['id'], progress))
                 except Exception as error:
-                    errors.append(record['origin'] + ': ' + str(error))
+                    errors.append(record['origin'] + ': ' + describe_error(error))
                     try: packages[record['id']] = self.source_store.load(record['id'])
                     except Exception: pass
             return official, packages, selected, errors
@@ -640,22 +675,22 @@ class Window(QMainWindow):
         self.populate()
         self.notice('Catalogue updated. Select a mod to install or configure it.')
         if self.manager is None:
-            QTimer.singleShot(100, self.detect_games)
+            QTimer.singleShot(100, lambda: self.detect_games(background=True))
 
-    def detect_games(self):
+    def detect_games(self, checked=False, background=False):
         from .platforms import find_games
         if self._busy:
-            QTimer.singleShot(100, self.detect_games)
+            QTimer.singleShot(100, lambda: self.detect_games(background=background))
             return
         def detected(games):
             if len(games) == 1:
                 self.set_game(games[0])
-                self.notice('Found your Steam installation. Select a mod to continue.')
+                self.notice('Found your Steam installation. Select a mod to continue.', background=background)
             elif games:
-                self.notice('Multiple installations found. Use Browse to choose one: ' + '; '.join(map(str, games)))
+                self.notice('Multiple installations found. Use Browse to choose one: ' + '; '.join(map(str, games)), background=background)
             else:
-                self.notice('No Steam installation found. Use Browse to select the game folder.')
-        self.run_job('Looking for the game in Steam libraries…', lambda progress: find_games(), detected)
+                self.notice('No Steam installation found. Use Browse to select the game folder.', background=background)
+        self.run_job('Looking for the game in Steam libraries…', lambda progress: find_games(), detected, background)
 
     def browse_game(self):
         path = QFileDialog.getExistingDirectory(self, 'Select PUKEY game folder', self.path_edit.text())
@@ -763,8 +798,10 @@ class Window(QMainWindow):
 
     def render_details(self):
         self.settings_widgets = {}
+        self._other_keys = {}
         self.reset_buttons = {}
         self.help_buttons = {}
+        self.key_warnings = {}
         self._settings_error = False
         self._dirty = False
         self._image_bytes = None
@@ -823,6 +860,7 @@ class Window(QMainWindow):
                     widget.addItem(str(value), str(value))
                 widget.setCurrentIndex(widget.findData(str(value)))
                 widget.currentIndexChanged.connect(self.mark_dirty)
+                widget.currentIndexChanged.connect(self.update_key_conflicts)
             else:
                 widget = QComboBox()
                 widget.addItems(field['options'])
@@ -861,6 +899,10 @@ class Window(QMainWindow):
                 bottom.addWidget(reset)
                 stack.addLayout(top)
                 stack.addLayout(bottom)
+                warning = text_label('', 'keyConflict')
+                warning.hide()
+                stack.addWidget(warning)
+                self.key_warnings[field['key']] = warning
                 row_layout.addLayout(stack)
                 bindings.addWidget(row)
                 key_count += 1
@@ -872,6 +914,8 @@ class Window(QMainWindow):
                 preferences.addWidget(row)
                 general_count += 1
             self.settings_widgets[field['key']] = widget
+        self._other_keys = self.keys_in_use(mod)
+        self.update_key_conflicts()
         if not general_count:
             preferences.addWidget(text_label('This mod has no adjustable preferences.' if mod else 'No mod selected.', 'muted'))
         preferences.addStretch()
@@ -896,6 +940,44 @@ class Window(QMainWindow):
         self.mod_count.setText(str(self.mod_list.count()))
         self.nav_empty.setVisible(self.mod_list.count() == 0)
         self.update_controls()
+
+    def keys_in_use(self, current):
+        """Keys bound by the other installed, enabled mods; in game every binding of a key fires."""
+        used = {}
+        if not (current and self.manager):
+            return used
+        for mod in self.library_mods():
+            fields = [field for field in mod.get('settings', []) if field['type'] == 'key']
+            if mod['id'] == current['id'] or not fields:
+                continue
+            try:
+                manager = self.manager_for(mod)
+                state = manager.status(mod)
+                if not (state['installed'] and state['enabled']):
+                    continue
+                values = manager.settings(mod)
+            except Exception:
+                continue
+            for field in fields:
+                used.setdefault(str(values.get(field['key'], field['default'])), []).append(
+                    mod['name'] + ': ' + field['label'])
+        return used
+
+    def update_key_conflicts(self, *args):
+        labels = {field['key']: field['label'] for field in (self.current_mod or {}).get('settings', [])}
+        values = {key: self.field_value(self.settings_widgets[key]) for key in self.key_warnings}
+        for key, warning in self.key_warnings.items():
+            others = [labels[other] for other, value in values.items() if other != key and value == values[key]]
+            others += self._other_keys.get(values[key], [])
+            text = 'Also used by ' + '; '.join(others) + '.' if others else ''
+            warning.setText(text)
+            warning.setVisible(bool(others))
+            widget = self.settings_widgets[key]
+            widget.setAccessibleDescription(text)
+            if widget.property('conflict') != bool(others):
+                widget.setProperty('conflict', bool(others))
+                widget.style().unpolish(widget)
+                widget.style().polish(widget)
 
     def mark_dirty(self, *args):
         self._dirty = True

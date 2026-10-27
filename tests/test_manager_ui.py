@@ -241,6 +241,57 @@ class ManagerUiTests(unittest.TestCase):
         self.assertTrue(window.refresh_button.isEnabled())
         self.assertIn('Download failed', window.status_label.text())
 
+    def test_errors_name_their_own_next_step(self):
+        from urllib.error import HTTPError, URLError
+        from manager.gui import describe_error
+        self.assertIn('internet connection', describe_error(URLError('getaddrinfo failed')))
+        forbidden = HTTPError('https://example.invalid', 403, 'Forbidden', {}, None)
+        self.addCleanup(forbidden.close)
+        self.assertIn('HTTP 403', describe_error(forbidden))
+        locked = describe_error(PermissionError(13, 'Access is denied', 'C:/Game/dwmapi.dll'))
+        self.assertIn('C:/Game/dwmapi.dll', locked)
+        self.assertIn('Close the game', locked)
+        self.assertEqual(describe_error(ValueError('Invalid ZIP archive')), 'Invalid ZIP archive')
+        self.assertNotIn('connection', describe_error(ValueError('Invalid ZIP archive')))
+
+    def test_background_notices_keep_an_unhandled_error_visible(self):
+        window = self.make_window()
+        window.notice('The download server could not be reached.', True)
+        window.notice('Game interface artwork loaded from your installation.', background=True)
+        self.assertIn('could not be reached', window.status_label.text())
+        self.assertFalse(window.status_icon.isHidden())
+        window.notice('Installing FreeCam…')
+        self.assertEqual(window.status_label.text(), 'Installing FreeCam…')
+        self.assertTrue(window.status_icon.isHidden())
+
+    def test_key_conflicts_are_flagged_within_and_across_mods(self):
+        key = lambda name, default: {'key': name, 'label': name, 'type': 'key', 'default': default}
+        first = {'id': 'First', 'name': 'First', 'version': '1.0', 'description': '', 'controls': '',
+                 'settings': [key('Toggle', 'F5'), key('Mode', 'F6')]}
+        other = {'id': 'Other', 'name': 'Other', 'version': '1.0', 'description': '', 'controls': '',
+                 'settings': [key('Flood', 'F1')]}
+        idle = {'id': 'Idle', 'name': 'Idle', 'version': '1.0', 'description': '', 'controls': '',
+                'settings': [key('Reload', 'F2')]}
+        window = self.make_window(SimpleNamespace(mods=[first, other, idle], files={}, revision='test'))
+        window.manager = SimpleNamespace(win64=window.preferences_path.parent,
+            status=lambda mod: {'installed': True, 'enabled': mod['id'] != 'Idle', 'update': False, 'managed': True},
+            settings=lambda mod: {field['key']: field['default'] for field in mod['settings']})
+        window.mod_list.setCurrentRow(0)
+        window.render_details()
+        self.assertTrue(window.key_warnings['Toggle'].isHidden())
+        toggle = window.settings_widgets['Toggle']
+        toggle.setCurrentIndex(toggle.findData('F6'))
+        self.assertFalse(window.key_warnings['Toggle'].isHidden())
+        self.assertIn('Mode', window.key_warnings['Toggle'].text())
+        self.assertIn('Toggle', window.key_warnings['Mode'].text())
+        toggle.setCurrentIndex(toggle.findData('F1'))
+        self.assertIn('Other: Flood', window.key_warnings['Toggle'].text())
+        self.assertTrue(window.key_warnings['Mode'].isHidden())
+        toggle.setCurrentIndex(toggle.findData('F2'))
+        self.assertTrue(window.key_warnings['Toggle'].isHidden(), 'Disabled mods do not compete for keys')
+        self.assertEqual(window.field_value(toggle), 'F2')
+        window._dirty = False
+
     def test_fractional_values_do_not_round_to_step_precision(self):
         mod = {'id': 'Example', 'name': 'Example', 'description': '', 'controls': '',
                'settings': [{'key': 'Intensity', 'label': 'Intensity', 'type': 'number',

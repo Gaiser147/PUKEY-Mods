@@ -181,6 +181,10 @@ def icon(kind, color='#f0ece8'):
         painter.drawPolyline(QPolygonF([QPointF(3, 10), QPointF(3, 4), QPointF(9, 4)]))
     elif kind == 'check':
         painter.drawPolyline(QPolygonF([QPointF(5, 12), QPointF(10, 17), QPointF(20, 6)]))
+    elif kind == 'alert':
+        painter.drawPolygon(QPolygonF([QPointF(12, 3), QPointF(22, 20), QPointF(2, 20)]))
+        line(12, 9, 12, 14)
+        painter.drawEllipse(QRectF(11.5, 16.5, 1, 1))
     elif kind == 'info':
         painter.drawEllipse(QRectF(3, 3, 18, 18))
         line(12, 11, 12, 17)
