@@ -1,0 +1,16 @@
+---
+layout: base
+---
+{%- assign repo = site.github.repository_url | default: 'https://github.com/Gaiser147/PUKEY-Mods' -%}
+<article class="doc">
+  <div class="sheet">
+    <p class="crumbs"><a href="{{ '/' | relative_url }}">PUKEY Mods</a>{% if page.dir != '/' %} / {{ page.dir | remove_first: '/' | split: '/' | join: ' / ' }}{% endif %}</p>
+    <div class="prose">
+{{ content | replace: '<table>', '<div class="table-wrap"><table>' | replace: '</table>', '</table></div>' }}
+    </div>
+  </div>
+  <p class="doc-foot">
+    <a href="{{ repo }}/blob/{{ site.github.source.branch | default: 'main' }}/{{ page.path }}">View this page on GitHub</a>
+    <a href="{{ repo }}/releases">Download the Mod Manager</a>
+  </p>
+</article>

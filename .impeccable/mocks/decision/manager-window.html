@@ -1,0 +1,63 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<link href="https://fonts.googleapis.com/css2?family=Amarante&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{background:#111012;color:#f0ece8;font:16px/1.5 "Segoe UI","DejaVu Sans",system-ui,sans-serif;position:relative}
+body::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");pointer-events:none;z-index:5}
+a{color:inherit;text-decoration:none}
+.amar{font-family:Amarante,serif;font-weight:400}
+.osw{font-family:Oswald,sans-serif}
+.muted{color:#b5adb5}
+.mint{color:#02e5a2}
+.sheet{position:relative;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0035 0.009' numOctaves='5' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.20  0 0 0 0 0.16  0 0 0 0 0.22  0 0 0 1.5 -0.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"), #1a161c;background-size:1600px 1000px;border-radius:3px;
+  box-shadow:0 18px 40px -18px #000, inset 0 0 0 1px #3a313c, inset 0 0 60px 10px #0b0a0c}
+.ribbon{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath fill='%2302e5a2' d='M6 9 L30 4 L120 7 L250 3 L372 6 L394 2 L388 14 L398 22 L389 33 L397 44 L384 51 L392 58 L300 55 L170 58 L60 54 L12 57 L18 47 L3 38 L13 29 L2 19 Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;color:#101113}
+.pink{display:inline-flex;align-items:center;gap:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 56' preserveAspectRatio='none'%3E%3Cpath fill='%23ff0060' d='M8 6 L60 3 L170 5 L292 2 L288 16 L297 28 L290 41 L296 53 L190 51 L80 54 L4 52 L10 39 L2 27 L9 15 Z'/%3E%3Cpath fill='none' stroke='%23ff5c93' stroke-width='1.2' d='M14 10 L150 8 L284 7'/%3E%3C/svg%3E") center/100% 100% no-repeat;color:#fff;
+  font-family:Oswald,sans-serif;font-size:21px;letter-spacing:.02em;padding:12px 34px 13px}
+.ghost{display:inline-flex;align-items:center;gap:10px;border:1px solid #766a78;border-radius:3px;padding:10px 20px;font-size:15px;background:#18151a}
+.nav{position:absolute;top:0;left:0;right:0;height:84px;display:flex;align-items:center;gap:36px;padding:0 64px;z-index:3}
+.nav .brand{font-family:Amarante,serif;font-size:30px;margin-right:auto}
+.nav a.l{font-family:Oswald,sans-serif;font-size:16px;color:#b5adb5}
+.key{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:0 10px;border:1px solid #514452;border-radius:3px;background:#080709;font-family:Oswald,sans-serif;font-size:16px;color:#02e5a2}
+</style>
+<style>
+.head{position:absolute;left:64px;top:112px;width:1312px;display:flex;align-items:flex-end;justify-content:space-between}
+.head h1{font-size:60px;line-height:1.05;max-width:760px}
+.head p{font-size:17px;color:#d9d2d6;max-width:440px}
+.win{position:absolute;left:64px;right:64px;top:272px;bottom:0;border:1px solid #3a313c;border-bottom:0;border-radius:6px 6px 0 0;background:#111012;padding:20px 26px 0;overflow:hidden}
+.tabs{display:flex;gap:6px;height:62px;margin-bottom:16px}
+.tab{width:224px;padding:8px 26px}
+.tab b{font-family:Oswald;font-weight:400;font-size:21px;display:block;line-height:1.2}
+.tab span{font-size:12.5px}
+.tab.ribbon span{color:#101113}
+.tab:not(.ribbon) span{color:#b5adb5}
+.cols{display:grid;grid-template-columns:1fr 300px;gap:18px;height:440px}
+.main{padding:22px 26px}
+.main h2{font-size:42px;line-height:1.1}
+.main .meta{font-size:13px;color:#b5adb5;margin:4px 0 10px}
+.main .d{font-size:14px;color:#d9d2d6;margin-bottom:16px}
+.f{display:flex;align-items:center;gap:14px;height:54px;border-top:1px solid #514452;max-width:720px;font-size:14.5px}
+.f label{flex:1}
+.fv{width:180px;height:32px;border:1px solid #766a78;border-radius:2px;background:#080709;padding:5px 10px;font-size:14px}
+.keys{padding:22px 20px}
+.keys h3{font-family:Amarante;font-weight:400;font-size:24px;text-align:center;margin-bottom:12px}
+.kr{border-top:1px solid #514452;padding:10px 0 12px;font-size:14px}
+.kr .key{margin-top:6px;width:116px;justify-content:flex-start}
+.bar{position:absolute;left:26px;right:26px;bottom:0;height:70px;display:flex;align-items:center;justify-content:space-between;background:#111012;border-top:1px solid #2a2330}
+.bar .muted{font-size:13.5px}
+</style></head><body><nav class="nav"><span class="brand">PUKEY Mods</span><a class="l" href="#">Mods</a><a class="l" href="#">Guides</a><a class="l" href="#">Troubleshooting</a><a class="l" href="#">GitHub</a></nav>
+<div class="head"><h1 class="amar">Install, tune and rebind PUKEY mods in one window.</h1>
+<p>The PUKEY Mod Manager for Windows and Linux. Shown below as a page replica, without the game's own artwork.</p></div>
+<section class="win">
+ <div class="tabs"><div class="tab ribbon"><b>FreeCam</b><span>Enabled · v1.1.0</span></div><div class="tab"><b>LightTools</b><span>Not installed</span></div><div class="tab"><b>FamSwap</b><span>Not installed</span></div><div class="tab"><b>MovieSwap</b><span>Not installed</span></div></div>
+ <div class="cols">
+  <div class="sheet main"><h2 class="amar">FreeCam</h2><div class="meta">Installed · v1.1.0</div><div class="d">Explore scenes with a free camera, teleport the player, and save camera positions per map.</div>
+   <div class="f"><label>Camera mode</label><div class="fv">possess</div></div>
+   <div class="f"><label>Movement speed (cm/s)</label><div class="fv">400</div></div>
+   <div class="f"><label>Speed boost multiplier</label><div class="fv">4.0</div></div>
+   <div class="f"><label>Viewtarget mouse sensitivity</label><div class="fv">0.15</div></div></div>
+  <div class="sheet keys"><h3>Keybindings</h3><div class="kr">Toggle camera<br><span class="key">F5</span></div><div class="kr">Switch mode<br><span class="key">F6</span></div><div class="kr">Increase speed<br><span class="key">Page Up</span></div></div>
+ </div>
+ <div class="bar"><span class="muted">Mod Manager 0.5 · prerelease · Windows ZIP and Linux x86-64 · no Python needed</span><span style="display:flex;gap:14px;align-items:center"><a class="ghost" href="#">Install manually</a><a class="pink" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg>Download Mod Manager</a></span></div>
+</section></body></html>

@@ -1,0 +1,120 @@
+---
+layout: base
+title: PUKEY Mods
+description: "UE4SS mods for the PUKEY GODDESS SHOT TRICK Steam demo: FreeCam, LightTools, FamSwap and MovieSwap, installed and configured with the PUKEY Mod Manager for Windows and Linux."
+scripts: true
+---
+{%- assign repo = site.github.repository_url | default: 'https://github.com/Gaiser147/PUKEY-Mods' -%}
+{%- assign releases_url = repo | append: '/releases' -%}
+{%- assign release = nil -%}
+{%- for r in site.github.releases -%}
+  {%- if r.tag_name contains 'manager-v' and r.draft != true -%}{%- assign release = r -%}{%- break -%}{%- endif -%}
+{%- endfor -%}
+{%- assign win_url = releases_url -%}
+{%- assign linux_url = releases_url -%}
+{%- if release -%}
+  {%- assign version = release.tag_name | remove_first: 'manager-v' -%}
+  {%- assign short = version | split: '.' -%}
+  {%- assign short = short[0] | append: '.' | append: short[1] -%}
+  {%- for asset in release.assets -%}
+    {%- assign ext = asset.name | slice: -4, 4 -%}
+    {%- if ext == '.zip' -%}{%- assign win_url = asset.browser_download_url -%}{%- endif -%}
+    {%- if ext == 'r.gz' -%}{%- assign linux_url = asset.browser_download_url -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- capture download_icon -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg>{%- endcapture -%}
+
+<section class="release" aria-labelledby="release-title">
+  <div class="sheet">
+    {%- if release %}
+    <p class="numeral" aria-hidden="true">{{ short }}</p>
+    {%- endif %}
+    <div class="copy">
+      {%- if release %}
+      <span class="ribbon">{% if release.prerelease %}Prerelease{% else %}Release{% endif %} · {{ release.published_at | date: "%-d %b %Y" }}</span>
+      <h1 id="release-title">Mod Manager {{ version }}</h1>
+      {%- else %}
+      <span class="ribbon">Windows &amp; Linux</span>
+      <h1 id="release-title">PUKEY Mod Manager</h1>
+      {%- endif %}
+      <p class="pitch">Pick the game folder, install UE4SS, choose your mods. The manager installs, updates and configures FreeCam, LightTools, FamSwap and MovieSwap for the PUKEY GODDESS SHOT TRICK demo.</p>
+      <div class="actions">
+        <a class="btn primary" data-platform="windows" href="{{ win_url }}">{{ download_icon }}Windows <small>ZIP</small></a>
+        <a class="btn" data-platform="linux" href="{{ linux_url }}">{{ download_icon }}Linux <small>x86-64 tar.gz</small></a>
+        <a class="btn" href="{{ '/docs/installation.html' | relative_url }}">Install manually</a>
+      </div>
+      <p class="note">No Python needed: extract the whole folder and run PUKEY-Mod-Manager. Gameplay under Proton is unverified. <a href="{{ releases_url }}">All releases</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="ledger" id="mods" aria-label="Mods">
+  <ul>
+    <li><a href="{{ '/Mods/FreeCam/' | relative_url }}">
+      <div class="name"><h2>FreeCam</h2><span class="keys"><span class="key">F5</span><span class="key">F6</span><span class="key">T</span></span></div>
+      <p>Free camera, player teleport and five camera bookmarks per map.</p>
+      <span class="more">FreeCam guide</span>
+    </a></li>
+    <li><a href="{{ '/Mods/LightTools/' | relative_url }}">
+      <div class="name"><h2>LightTools</h2><span class="keys"><span class="key">F1–F4</span><span class="key">F7</span></span></div>
+      <p>Floodlight, headlight, brightness, fog, shadows and post-processing.</p>
+      <span class="more">LightTools guide</span>
+    </a></li>
+    <li><a href="{{ '/Mods/FamSwap/' | relative_url }}">
+      <div class="name"><h2>FamSwap</h2><span class="keys"><span class="key">F8</span><span class="key">F9</span></span></div>
+      <p>Your own still images behind the counter and at the table.</p>
+      <span class="more">FamSwap guide</span>
+    </a></li>
+    <li><a href="{{ '/Mods/MovieSwap/' | relative_url }}">
+      <div class="name"><h2>MovieSwap</h2><span class="keys"><span class="key">F11</span></span></div>
+      <p>Custom MP4 replacements for the game's videos.</p>
+      <span class="more">MovieSwap guide</span>
+    </a></li>
+  </ul>
+</section>
+
+<section class="section" aria-labelledby="steps-title">
+  <h2 id="steps-title">From download to F5 in four steps</h2>
+  <p class="lede">The manager does the file work. Each mod installs on its own, so you only add what you want.</p>
+  <ol class="steps">
+    <li><h3>Extract and start</h3><p>Unpack the whole folder and run <code>PUKEY-Mod-Manager</code>. Keep <code>_internal</code> beside it.</p></li>
+    <li><h3>Find the game</h3><p>Let <strong>Find in Steam</strong> locate the demo, or browse to its folder yourself.</p></li>
+    <li><h3>Install UE4SS</h3><p>Close the game. The manager downloads UE4SS from its official release and disables the incompatible example mods.</p></li>
+    <li><h3>Choose your mods</h3><p>Install a mod, adjust its settings and keys, save, and start the demo through Steam.</p></li>
+  </ol>
+</section>
+
+<section class="section" aria-labelledby="facts-title">
+  <h2 id="facts-title">Before you start</h2>
+  <p class="lede">What the mods need, and what this project does not promise.</p>
+  <div class="facts">
+    <div class="sheet">
+      <h3>Requirements</h3>
+      <ul>
+        <li><strong>Windows 10 or 11</strong> with the Steam demo of PUKEY GODDESS SHOT TRICK.</li>
+        <li><strong>UE4SS</strong>, which the manager installs from its official release. Manual installs follow the <a href="{{ '/docs/installation.html' | relative_url }}">installation guide</a>.</li>
+        <li><strong>Linux and Steam Deck:</strong> the manager runs there and manages the Windows game files. Gameplay under Proton is unverified.</li>
+      </ul>
+    </div>
+    <div class="sheet">
+      <h3>Good to know</h3>
+      <ul>
+        <li>Game or UE4SS updates can require mod changes. The full game has not been tested.</li>
+        <li>No game files are shipped. FamSwap and MovieSwap use images and videos you supply.</li>
+        <li>Updates keep your settings and personal files. Something not working? See <a href="{{ '/docs/troubleshooting.html' | relative_url }}">troubleshooting</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="guides-title">
+  <h2 id="guides-title">Guides</h2>
+  <ul class="guides">
+    <li><a href="{{ '/docs/mod-manager.html' | relative_url }}"><strong>Mod Manager</strong><span>Settings, keybindings, media, updates and community mods.</span></a></li>
+    <li><a href="{{ '/docs/installation.html' | relative_url }}"><strong>Manual installation</strong><span>UE4SS setup, activation, updates and uninstalling.</span></a></li>
+    <li><a href="{{ '/docs/troubleshooting.html' | relative_url }}"><strong>Troubleshooting</strong><span>Known limitations and what to check first.</span></a></li>
+    <li><a href="{{ '/docs/mod-catalogue.html' | relative_url }}"><strong>Add a mod to the catalogue</strong><span>Manifest format and authoring for new mods.</span></a></li>
+    <li><a href="{{ '/diagnostics/' | relative_url }}"><strong>Diagnostic mods</strong><span>EditionProbe, FamProbe, MediaProbe and UsmapDump.</span></a></li>
+    <li><a href="{{ '/docs/development.html' | relative_url }}"><strong>Development</strong><span>Developer workflow and package building.</span></a></li>
+  </ul>
+</section>
