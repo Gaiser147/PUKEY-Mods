@@ -181,6 +181,13 @@ def icon(kind, color='#f0ece8'):
         painter.drawPolyline(QPolygonF([QPointF(3, 10), QPointF(3, 4), QPointF(9, 4)]))
     elif kind == 'check':
         painter.drawPolyline(QPolygonF([QPointF(5, 12), QPointF(10, 17), QPointF(20, 6)]))
+    elif kind == 'keyboard':
+        rounded(2, 6, 20, 13)
+        for x in (6, 10, 14, 18):
+            line(x, 10, x + 0.01, 10)
+        for x in (8, 12, 16):
+            line(x, 13, x + 0.01, 13)
+        line(8, 16, 16, 16)
     elif kind == 'alert':
         painter.drawPolygon(QPolygonF([QPointF(12, 3), QPointF(22, 20), QPointF(2, 20)]))
         line(12, 9, 12, 14)
@@ -273,13 +280,16 @@ class PreviewCanvas(QLabel):
         painter.fillRect(self.rect(), QColor('#141216'))
         pixmap = self.pixmap()
         if pixmap is not None and not pixmap.isNull():
-            size = self.size() - QSize(28, 28)
+            ratio = self.devicePixelRatioF()
+            size = (self.size() - QSize(28, 28)) * ratio
             scaled = pixmap.scaled(size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            x, y = (self.width() - scaled.width()) // 2, (self.height() - scaled.height()) // 2
+            scaled.setDevicePixelRatio(ratio)
+            logical = scaled.deviceIndependentSize().toSize()
+            x, y = (self.width() - logical.width()) // 2, (self.height() - logical.height()) // 2
             painter.save()
-            painter.setClipRect(x, y, scaled.width(), scaled.height())
-            for row in range(y, y + scaled.height(), 12):
-                for column in range(x, x + scaled.width(), 12):
+            painter.setClipRect(x, y, logical.width(), logical.height())
+            for row in range(y, y + logical.height(), 12):
+                for column in range(x, x + logical.width(), 12):
                     shade = '#514c55' if ((row - y) // 12 + (column - x) // 12) % 2 else '#38343d'
                     painter.fillRect(column, row, 12, 12, QColor(shade))
             painter.drawPixmap(QPoint(x, y), scaled)
