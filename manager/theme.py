@@ -35,7 +35,7 @@ QLabel#sectionTitle { font-family: Oswald; font-size: 13pt; }
 QLabel#muted, QLabel#modStatus, QLabel#operationStatus, QLabel#sidebarMuted {
     color: #b5adb5; font-size: 9.5pt;
 }
-QLabel#keyHeading { font-family: Amarante; font-size: 18pt; padding: 10px 5px 14px; }
+QLabel#keyHeading { font-family: Amarante; font-size: 16pt; padding: 14px 5px 12px; }
 QListWidget#modNavigation { background: transparent; border: 0; outline: 0; }
 QPushButton { min-height: 27px; padding: 4px 11px; border: 1px solid #766a78; border-radius: 3px; background: #18151a; }
 QPushButton:hover { border-color: #f0ece8; background: #302630; }
@@ -62,6 +62,7 @@ QLineEdit, QComboBox, QDoubleSpinBox {
 QLineEdit { placeholder-text-color: #b5adb5; }
 QLineEdit:disabled, QComboBox:disabled, QDoubleSpinBox:disabled { color: #a69aa6; border-color: #514452; background: #201a22; }
 QWidget#keyRow QComboBox { color: #02e5a2; font-family: Oswald; font-size: 12pt; }
+QWidget#keyRow QComboBox:disabled { color: #a69aa6; }
 QDoubleSpinBox { padding-right: 23px; }
 QDoubleSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 22px; height: 17px; border-left: 1px solid #514452; }
 QDoubleSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 22px; height: 17px; border-left: 1px solid #514452; }
@@ -103,8 +104,8 @@ QToolTip { color: #f0ece8; background: #302630; border: 1px solid #766a78; }
 def stylesheet(game_theme=None):
     if not game_theme:
         return STYLE
-    from PySide6.QtCore import QUrl
-    image_url = QUrl.fromLocalFile(str(Path(game_theme) / 'button-pink.png')).toString()
+    # Qt style sheets resolve plain paths only; a file:/// URL silently draws nothing.
+    image_url = (Path(game_theme) / 'button-pink.png').as_posix()
     return STYLE + '''
 QPushButton#primary, QPushButton[prominent="true"] {
     border: 6px solid transparent; border-image: url("%s") 18 28 18 28 stretch stretch;

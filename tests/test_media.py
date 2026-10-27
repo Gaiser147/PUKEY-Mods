@@ -83,6 +83,14 @@ class MediaTests(unittest.TestCase):
         data = b"Known videos:\nBacchus/Movie/Fam/A.mp4\n video avc1\nBacchus/Movie/Fam/A.mp4\nBacchus/Movie/Event/B.mp4\n"
         self.assertEqual(video_targets(data), ["Bacchus/Movie/Fam/A.mp4", "Bacchus/Movie/Event/B.mp4"])
 
+    def test_video_formats_are_readable(self):
+        from manager.media import video_formats
+        data = (b"Bacchus/Movie/Fam/A.mp4\n    video avc1 2560x1440 1.42s 24.00fps; audio mp4a\n"
+                b"Bacchus/Movie/Event/B.mp4\n    video avc1 1320x600 3.00s 30.00fps\nBacchus/Movie/Event/C.mp4\n")
+        self.assertEqual(video_formats(data), {
+            "Bacchus/Movie/Fam/A.mp4": "H.264 · 2560 × 1440 · 24 fps · 1.42 s · with audio",
+            "Bacchus/Movie/Event/B.mp4": "H.264 · 1320 × 600 · 30 fps · 3 s · no audio"})
+
     def test_video_list_rejects_traversal_backslashes_and_bad_paths(self):
         for path in ("Bacchus/Movie/../A.mp4", "Bacchus/Movie/./A.mp4", "Bacchus/Movie/Fam\\A.mp4", "/Bacchus/Movie/A.mp4", "Bacchus/Movie/C:/A.mp4"):
             with self.subTest(path=path), self.assertRaises(ValueError):

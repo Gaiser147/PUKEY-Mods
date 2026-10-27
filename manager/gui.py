@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QStandardPaths, QUrl
-from PySide6.QtGui import QDesktopServices, QPixmap, QCloseEvent, QFontDatabase, QFont
+from PySide6.QtGui import QDesktopServices, QIcon, QPixmap, QCloseEvent, QFontDatabase, QFont
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QLineEdit, QFileDialog, QListWidget, QListWidgetItem,
@@ -16,10 +16,14 @@ from PySide6.QtWidgets import (
 
 from . import __version__
 from .theme import stylesheet, load_fonts
-from .widgets import icon, mod_icon, ModDelegate, PreviewCanvas, DialoguePanel, ModNavigation, OrnamentHeading, texture
+from .setting_help import HelpButton, default_label, key_label
+from .widgets import icon, state_icon, mod_icon, ModDelegate, PreviewCanvas, DialoguePanel, ModNavigation, OrnamentHeading, texture
 
 REPOSITORY = 'https://github.com/Gaiser147/PUKEY-Mods'
 PROTON_OPTION = 'WINEDLLOVERRIDES="dwmapi.dll=n,b" %command%'
+COMPACT_HEIGHT = 800
+# Qt ignores the style sheet's left padding on spin boxes; match the 9px inset of other fields.
+SPIN_TEXT_INSET = 8
 KEYS = ([f'F{i}' for i in range(1, 13)] + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') +
         ['HOME', 'END', 'PAGE_UP', 'PAGE_DOWN', 'INSERT', 'DELETE', 'SPACE',
          'ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'])
@@ -101,6 +105,8 @@ class Window(QMainWindow):
         if self.snapshot:
             self.source_label.setText('Local catalogue')
             self.populate()
+            # Start on the library rather than painting a focus ring on the first header button.
+            self.mod_list.setFocus()
         else:
             self.render_details()
         if start_online:
@@ -136,6 +142,7 @@ class Window(QMainWindow):
         self.folder_button.toggled.connect(self.toggle_game_panel)
         top_actions.addWidget(self.folder_button)
         self.add_mod_button = QPushButton('Add mod…')
+        self.add_mod_button.setObjectName('headerAction')
         self.add_mod_button.clicked.connect(self.add_mods)
         top_actions.addWidget(self.add_mod_button)
         self.refresh_button = QPushButton('Refresh catalogue')
@@ -153,6 +160,7 @@ class Window(QMainWindow):
         self.cached_button.setToolTip('Open the last downloaded catalogue without a connection')
         self.cached_button.clicked.connect(self.use_cached)
         bottom_actions.addWidget(self.cached_button)
+        self.masthead_links = bottom_actions
         header_actions.addLayout(bottom_actions)
         masthead.addLayout(header_actions)
         outer.addLayout(masthead)
@@ -319,13 +327,27 @@ class Window(QMainWindow):
         empty_layout.addStretch()
         outer.addWidget(self.empty_state, 1)
 
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setMaximumHeight(3)
+        self.progress_bar.hide()
+        outer.addWidget(self.progress_bar)
+        # One bar carries operation status and the persistent actions; a second status line cost a row.
+        status = QHBoxLayout()
+        status.setContentsMargins(8, 0, 6, 0)
+        status.setSpacing(16)
+        self.status_label = text_label('Ready. Personal files are kept during updates.', 'operationStatus')
+        self.status_label.setMinimumHeight(24)
+        status.addWidget(self.status_label, 1)
         self.detail_footer = QFrame()
         self.detail_footer.setObjectName('detailFooter')
         self.save_row = QHBoxLayout(self.detail_footer)
-        self.save_row.setContentsMargins(8, 1, 8, 1)
+        self.save_row.setContentsMargins(0, 1, 0, 1)
         self.save_row.setSpacing(10)
-        self.unsaved_label = text_label('Restart the game after applying changes.', 'muted')
-        self.save_row.addWidget(self.unsaved_label, 1)
+        self.unsaved_label = text_label('Unsaved changes')
+        self.unsaved_label.setWordWrap(False)
+        self.unsaved_label.hide()
+        self.save_row.addWidget(self.unsaved_label)
         self.preview_button = QPushButton('Preview')
         self.preview_button.setIcon(icon('eye'))
         self.preview_button.clicked.connect(self.preview_image)
@@ -343,7 +365,7 @@ class Window(QMainWindow):
         self.restore_video_button = QPushButton('Restore original…')
         self.restore_video_button.setIcon(icon('undo'))
         self.restore_video_button.clicked.connect(lambda: self.restore_media(
-            self.current_mod['video_folder'] + '/' + self.video_choice.currentText()))
+            self.current_mod['video_folder'] + '/' + self.video_choice.currentData()))
         self.save_row.addWidget(self.restore_video_button)
         self.save_button = QPushButton('Save settings')
         self.save_button.setObjectName('primary')
@@ -354,27 +376,16 @@ class Window(QMainWindow):
         self.apply_footer_button.setObjectName('primary')
         self.apply_footer_button.clicked.connect(self.apply_image)
         self.save_row.addWidget(self.apply_footer_button)
-        outer.addWidget(self.detail_footer)
-
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)
-        self.progress_bar.setMaximumHeight(3)
-        self.progress_bar.hide()
-        outer.addWidget(self.progress_bar)
-        status = QHBoxLayout()
-        status.setContentsMargins(8, 0, 8, 0)
-        self.status_label = text_label('Ready. Personal files are kept during updates.', 'operationStatus')
-        self.status_label.setMinimumHeight(24)
-        status.addWidget(self.status_label, 1)
+        status.addWidget(self.detail_footer)
+        outer.addLayout(status)
         self.logs_button = QPushButton('Logs…')
         self.logs_button.setObjectName('sideLink')
         self.logs_button.clicked.connect(self.open_logs)
-        status.addWidget(self.logs_button)
+        self.masthead_links.addWidget(self.logs_button)
         repo = QPushButton('v' + __version__ + '  ·  GitHub')
         repo.setObjectName('sideLink')
         repo.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(REPOSITORY)))
-        status.addWidget(repo)
-        outer.addLayout(status)
+        self.masthead_links.addWidget(repo)
         self.update_controls()
 
     def snapshot_for(self, mod):
@@ -486,15 +497,27 @@ class Window(QMainWindow):
         self.setProperty('gameThemePath', str(directory) if directory else '')
         texture.cache_clear()
         self.setStyleSheet(stylesheet(directory))
-        logo = texture('logo', directory)
+        self.update_logo()
+        self.update()
+        return directory is not None
+
+    def update_logo(self):
+        # Short windows give the logo's height to the settings; the ribbon still carries the game identity.
+        compact = self.height() < COMPACT_HEIGHT
+        width, height = (112, 64) if compact else (188, 108)
+        self.logo_label.setFixedSize(width, height)
+        logo = texture('logo', self.theme_directory)
         if logo.isNull():
             self.logo_label.setPixmap(QPixmap())
             self.logo_label.setText('PUKEY')
         else:
-            self.logo_label.setPixmap(logo.scaled(188, 108, Qt.AspectRatioMode.KeepAspectRatio,
+            self.logo_label.setPixmap(logo.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio,
                                                  Qt.TransformationMode.SmoothTransformation))
-        self.update()
-        return directory is not None
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if (self.height() < COMPACT_HEIGHT) != (self.logo_label.height() < 108):
+            self.update_logo()
 
     def refresh_game_theme_presence(self):
         from .game_assets import game_present
@@ -786,18 +809,27 @@ class Window(QMainWindow):
                 widget.setRange(field['min'], field['max'])
                 widget.setSingleStep(field.get('step', 1))
                 widget.setValue(value)
+                widget.lineEdit().setTextMargins(SPIN_TEXT_INSET, 0, 0, 0)
                 widget.valueChanged.connect(self.mark_dirty)
             elif field['type'] == 'string':
                 widget = QLineEdit(str(value))
                 widget.setMaxLength(4096)
                 widget.textChanged.connect(self.mark_dirty)
+            elif field['type'] == 'key':
+                widget = QComboBox()
+                for code in KEYS:
+                    widget.addItem(key_label(code), code)
+                if widget.findData(str(value)) < 0:
+                    widget.addItem(str(value), str(value))
+                widget.setCurrentIndex(widget.findData(str(value)))
+                widget.currentIndexChanged.connect(self.mark_dirty)
             else:
                 widget = QComboBox()
-                widget.addItems(KEYS if field['type'] == 'key' else field['options'])
+                widget.addItems(field['options'])
                 widget.setCurrentText(str(value))
                 widget.currentTextChanged.connect(self.mark_dirty)
             widget.setAccessibleName(field['label'])
-            widget.setToolTip('Default: ' + str(field['default']))
+            widget.setToolTip('Default: ' + default_label(field))
             widget.setFixedWidth(116 if field['type'] == 'key' else 180)
             row = QWidget()
             row.setObjectName('keyRow' if field['type'] == 'key' else 'fieldRow')
@@ -807,15 +839,14 @@ class Window(QMainWindow):
             row_layout.setSpacing(12)
             label = text_label(field['label'])
             label.setBuddy(widget)
-            from .setting_help import HelpButton
             help_button = HelpButton(field)
             self.help_buttons[field['key']] = help_button
             reset = QToolButton()
-            reset.setIcon(icon('undo'))
+            reset.setIcon(state_icon('undo'))
             reset.setAutoRaise(True)
             reset.setFixedSize(26, 28)
             reset.setAccessibleName('Reset ' + field['label'])
-            reset.setToolTip('Reset to default: ' + str(field['default']) + '. Save settings to apply.')
+            reset.setToolTip('Reset to default: ' + default_label(field) + '. Save settings to apply.')
             reset.clicked.connect(lambda checked=False, key=field['key'], default=field['default']: self.reset_setting(key, default))
             self.reset_buttons[field['key']] = reset
             if field['type'] == 'key':
@@ -861,27 +892,29 @@ class Window(QMainWindow):
         if mod and (mod.get('images') or mod.get('video_list')):
             self.build_media(mod)
             self.tabs.addTab(self.media_scroll, 'Images' if mod.get('images') else 'Videos')
-        self.unsaved_label.setText('Restart the game after applying changes.')
+        self.unsaved_label.hide()
         self.mod_count.setText(str(self.mod_list.count()))
         self.nav_empty.setVisible(self.mod_list.count() == 0)
         self.update_controls()
 
     def mark_dirty(self, *args):
         self._dirty = True
-        self.unsaved_label.setText('Unsaved settings')
+        self.unsaved_label.show()
         self.update_controls()
 
     @staticmethod
     def field_value(widget):
         return (widget.isChecked() if isinstance(widget, QCheckBox) else
                 widget.value() if isinstance(widget, QDoubleSpinBox) else
-                widget.text() if isinstance(widget, QLineEdit) else widget.currentText())
+                widget.text() if isinstance(widget, QLineEdit) else
+                widget.currentData() if widget.currentData() is not None else widget.currentText())
 
     def reset_setting(self, key, default):
         widget = self.settings_widgets[key]
         if isinstance(widget, QCheckBox): widget.setChecked(default)
         elif isinstance(widget, QDoubleSpinBox): widget.setValue(default)
         elif isinstance(widget, QLineEdit): widget.setText(default)
+        elif widget.findData(default) >= 0: widget.setCurrentIndex(widget.findData(default))
         else: widget.setCurrentText(default)
 
     def update_controls(self):
@@ -1099,6 +1132,7 @@ class Window(QMainWindow):
             for label, widget in [('Size', self.image_scale), ('Top offset', self.image_top), ('Horizontal offset', self.image_x)]:
                 widget.setAccessibleName(label)
                 widget.setFixedWidth(112)
+                widget.lineEdit().setTextMargins(SPIN_TEXT_INSET, 0, 0, 0)
                 adjustments.addRow(label, widget)
                 widget.valueChanged.connect(self.invalidate_preview)
             controls.addLayout(adjustments)
@@ -1121,26 +1155,54 @@ class Window(QMainWindow):
             self.image_targets.currentIndexChanged.connect(self.image_target_changed)
             self.image_target_changed()
         else:
-            from .media import video_targets
+            from .media import video_formats, video_targets
             layout = QVBoxLayout(page)
             layout.setContentsMargins(0, 22, 12, 14)
             layout.setSpacing(14)
             key = 'Mods/' + mod['id'] + '/' + mod['video_list']
-            targets = video_targets(self.snapshot_for(mod).files[key])
+            data = self.snapshot_for(mod).files[key]
+            targets, self._video_formats = video_targets(data), video_formats(data)
+            mods_dir = getattr(self.manager_for(mod), 'mods_dir', None) if self.manager else None
+            replaced_folder = mods_dir / mod['id'] / mod['video_folder'] if mods_dir else None
             layout.addWidget(text_label('Replace a game video', 'sectionTitle'))
-            layout.addWidget(text_label('Choose the original clip, then import your replacement MP4.', 'muted'))
+            layout.addWidget(text_label('Choose the original clip, then import your replacement MP4. '
+                                        'Clips you already replaced are marked with a check.', 'muted'))
             self.video_choice = QComboBox()
             self.video_choice.setAccessibleName('Video to replace')
-            self.video_choice.addItems(targets)
+            group = None
+            for path in targets:
+                folder = path.split('/')[2] if path.count('/') > 2 else 'Other'
+                if group is not None and folder != group:
+                    self.video_choice.insertSeparator(self.video_choice.count())
+                group = folder
+                name = path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
+                replaced = bool(replaced_folder and (replaced_folder / path).is_file())
+                self.video_choice.addItem(icon('check', '#02e5a2') if replaced else QIcon(),
+                                          folder + '  ·  ' + name, path)
+                self.video_choice.setItemData(self.video_choice.count() - 1,
+                                              path + ('\nReplaced by your video' if replaced else ''),
+                                              Qt.ItemDataRole.ToolTipRole)
             self.video_choice.setMinimumContentsLength(18)
             self.video_choice.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
             layout.addWidget(self.video_choice)
             layout.addSpacing(10)
             layout.addWidget(text_label('Match the original format', 'sectionTitle'))
-            layout.addWidget(text_label('Most Fam videos use H.264 MP4, 2560×1440 at 24 fps, with a green background. Event and logo videos differ; see the mod guide for the selected clip.', 'muted'))
+            self.video_format = text_label('', 'muted')
+            layout.addWidget(self.video_format)
+            self.video_choice.currentIndexChanged.connect(self.video_target_changed)
+            self.video_target_changed()
             layout.addStretch()
             layout.addWidget(text_label('Your source file is kept. Restart after restoring an original video.', 'muted'))
         self.media_scroll.setWidget(page)
+
+    def video_target_changed(self, *args):
+        path = self.video_choice.currentData() or ''
+        original = self._video_formats.get(path)
+        text = ('Original: ' + original + '.' if original else
+                'The original format of this clip is not listed; see the mod guide.')
+        if '/Fam/' in path:
+            text += ' Fam clips need a pure green background (RGB 0, 255, 0).'
+        self.video_format.setText(text)
 
     def image_target_changed(self, *args):
         target = self.image_targets.currentData()
@@ -1199,7 +1261,7 @@ class Window(QMainWindow):
             return
         mod = self.current_mod
         manager = self.manager_for(mod)
-        target = mod['video_folder'] + '/' + self.video_choice.currentText()
+        target = mod['video_folder'] + '/' + self.video_choice.currentData()
         def import_file(progress):
             source = Path(filename)
             if source.stat().st_size > 32 * 1024 * 1024:

@@ -23,7 +23,7 @@ typography:
   brand: {fontFamily: "Amarante", fontSize: "28pt"}
   title: {fontFamily: "Amarante", fontSize: "27pt"}
   empty-title: {fontFamily: "Amarante", fontSize: "22pt"}
-  key-heading: {fontFamily: "Amarante", fontSize: "18pt"}
+  key-heading: {fontFamily: "Amarante", fontSize: "16pt"}
   navigation: {fontFamily: "Oswald", fontSize: "15pt"}
   accent: {fontFamily: "Oswald", fontSize: "13pt"}
   key: {fontFamily: "Oswald", fontSize: "12pt"}
@@ -74,9 +74,9 @@ Amarante supplies the brand, selected-mod title, empty-state heading, and key-sh
 
 ## Layout
 
-Initial window is 1280 × 860; minimum is 900 × 640. Final native captures cover 1280 × 860 and 1024 × 768. Qt logical pixels govern geometry. Outer margins are 24/14/24/10 (left/top/right/bottom), with a 10 gap. A masthead holds the game logo, brand, catalogue controls, and collapsible game-folder setup. The horizontal catalogue is 68 high, scrolls on overflow, and remains keyboard selectable.
+Initial window is 1280 × 860; minimum is 900 × 640. Final native captures cover 1280 × 860 and 1024 × 768. Qt logical pixels govern geometry. Outer margins are 24/14/24/10 (left/top/right/bottom), with a 10 gap. A masthead holds the game logo, brand, catalogue controls, catalogue/log/version links, and collapsible game-folder setup. Below 800 high the logo shrinks from 188 × 108 to 112 × 64 so settings keep the height. One bottom bar carries operation status on the left and the persistent actions on the right. The horizontal catalogue is 68 high, scrolls on overflow, and remains keyboard selectable.
 
-The expanding main sheet sits beside a fixed 280-wide key sheet with an 18 gap; main-sheet margins are 22/18/22/17 and key-sheet margins 18/16/18/16. Settings rows have a 56 minimum height, 8 vertical padding, 12 control gap, and 180-wide fields. Each has an info control by its label and a reset control by its value. Key rows have an 84 minimum height with label/help above a 116-wide value/reset row. Hide the key sheet when a mod has no keys or media is active. Images use a 270–310-wide options column, 22 gap, and expanding preview; videos use one column. There are no web breakpoints, mobile mode, or splitter.
+The expanding main sheet sits beside a fixed 280-wide key sheet with an 18 gap; main-sheet margins are 22/18/22/17 and key-sheet margins 18/16/18/16. Settings rows have a 56 minimum height, 8 vertical padding, 12 control gap, and 180-wide fields. Each has an info control by its label and a reset control by its value. Key rows have an 84 minimum height with label/help above a 116-wide value/reset row. Key values show keyboard names (Page Up, 0) while saving the UE4SS code. Hide the key sheet when a mod has no keys or media is active. Images use a 270–310-wide options column, 22 gap, and expanding preview; videos use one column. There are no web breakpoints, mobile mode, or splitter.
 
 **The Persistent Action Rule.** Keep saving, image preview/apply/restore, and video import/restore accessible outside scrolling content. Show the actions appropriate to the active capability and actual state.
 
@@ -92,7 +92,7 @@ Sheets and selected ribbons inherit their irregular silhouettes from artwork. Na
 
 Primary QPushButtons use `button-pink.png` as a six-pixel border image (source slices 18/28/18/28), Oswald type, and 165 minimum width. Hover adds a dark pink backing; disabled actions remove the image and use muted text, fill, and border. Secondary controls retain native keyboard activation, hover/pressed states, tooltips, and explicit enabled/disabled text. Checkboxes pair On/Off text with the mint SVG indicator.
 
-ModNavigation uses Oswald names with a smaller native-body status line. Cells stay 224 wide with a 57 height hint; wheel and trackpad input scroll horizontally without changing selection. Enabled/Disabled/Not installed is always explicit, with update state additional. Mint textured selection, faint hover and elision remain. The right-hand shortcut sheet contains real editable QComboBoxes. Combo popups and QMessageBox/QDialog surfaces remain opaque and dark. PreviewCanvas preserves aspect ratio and invalidates on changed inputs; apply requires a current preview. The footer shares saving across settings and keys and retains media actions while their content scrolls.
+ModNavigation uses Oswald names with a smaller native-body status line. Cells stay 224 wide with a 57 height hint; wheel and trackpad input scroll horizontally without changing selection. Enabled/Disabled/Not installed is always explicit, with update state additional. Mint textured selection, faint hover and elision remain. The right-hand shortcut sheet contains real editable QComboBoxes. Combo popups and QMessageBox/QDialog surfaces remain opaque and dark. PreviewCanvas preserves aspect ratio and invalidates on changed inputs; apply requires a current preview. The bottom bar shares saving across settings and keys, shows "Unsaved changes" beside it only while edits are pending, and retains media actions while their content scrolls. Reset icons are bright when a field differs from its default and recessed to the divider color otherwise. The key-sheet heading draws the plaque in three slices so the scroll ornaments keep their proportions. The video picker groups clips by folder, marks replaced clips with the mint check icon, and states the selected clip's original format.
 
 Info and reset are 26×28 authored line-icon tool buttons with keyboard focus. Hover/focus explains a setting; click opens a dark, bounded scrollable plain-text popup that closes on Escape or an outside click. Reset changes the form only; saving remains explicit. Add mod opens a focused import dialog with source inspection, release choices, package checkboxes and an explicit add action. External entries show origin and configuration/source access. Logs opens a separate modeless dark reader; native typography, plain text and persistent controls carry the same workbench language.
 

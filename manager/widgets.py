@@ -83,11 +83,38 @@ class ModNavigation(QListWidget):
 
 
 class OrnamentHeading(QLabel):
+    """Three slices: the scroll ornaments keep their proportions, only the plaque stretches."""
+    END_FRACTION = 0.125
+
+    _rows = {}
+
+    @classmethod
+    def _plaque_rows(cls, pixmap):
+        # The cooked texture carries a faint transparent margin below the frame; keep only the solid rows.
+        if pixmap.cacheKey() not in cls._rows:
+            image = pixmap.toImage()
+            column = image.width() // 2
+            rows = [y for y in range(image.height()) if image.pixelColor(column, y).alpha() > 128]
+            cls._rows[pixmap.cacheKey()] = (rows[0], rows[-1] + 1) if rows else (0, image.height())
+        return cls._rows[pixmap.cacheKey()]
+
     def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-        painter.drawPixmap(self.rect().adjusted(0, 7, 0, -7), widget_texture(self, 'heading'))
-        painter.end()
+        source = widget_texture(self, 'heading')
+        if not source.isNull():
+            top, bottom = self._plaque_rows(source)
+            source = source.copy(0, max(0, top - 16), source.width(), min(source.height(), bottom + 16) - max(0, top - 16))
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            target = QRectF(self.rect().adjusted(0, 2, 0, -2))
+            end = source.width() * self.END_FRACTION
+            end_target = min(end * target.height() / source.height(), target.width() / 3)
+            slices = ((0, end, target.left(), end_target),
+                      (end, source.width() - 2 * end, target.left() + end_target, target.width() - 2 * end_target),
+                      (source.width() - end, end, target.right() - end_target, end_target))
+            for sx, sw, tx, tw in slices:
+                painter.drawPixmap(QRectF(tx, target.top(), tw, target.height()), source,
+                                   QRectF(sx, 0, sw, source.height()))
+            painter.end()
         super().paintEvent(event)
 
 
@@ -165,6 +192,15 @@ def icon(kind, color='#f0ece8'):
     painter.end()
     image.setDevicePixelRatio(2)
     return QIcon(image)
+
+
+@lru_cache(maxsize=16)
+def state_icon(kind, color='#f0ece8', disabled='#514452'):
+    """Qt's generated disabled icon is nearly identical on dark surfaces; draw it recessed instead."""
+    result = QIcon()
+    result.addPixmap(icon(kind, color).pixmap(48, 48), QIcon.Mode.Normal)
+    result.addPixmap(icon(kind, disabled).pixmap(48, 48), QIcon.Mode.Disabled)
+    return result
 
 
 def mod_icon(mod, color='#f0ece8'):

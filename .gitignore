@@ -45,3 +45,8 @@ Desktop.ini
 /build/
 *.spec
 .impeccable/review/
+
+# Claude/Codex related markdown files 
+.CLAUDE
+.CODEX
+.AGENTS

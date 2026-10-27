@@ -125,3 +125,25 @@ def video_targets(data: bytes) -> list[str]:
             paths.append(path)
             seen.add(path.casefold())
     return paths
+
+
+CODECS = {"avc1": "H.264", "hev1": "H.265", "hvc1": "H.265"}
+
+
+def video_formats(data: bytes) -> dict[str, str]:
+    """Readable original format per VIDEOS.txt path, from the indented line below it."""
+    formats = {}
+    current = None
+    for line in data.decode("utf-8-sig", errors="replace").splitlines():
+        if line[:1].isspace() and current and line.strip().startswith("video "):
+            match = re.fullmatch(r"video (\w+) (\d+)x(\d+) ([\d.]+)s ([\d.]+)fps(; audio \w+)?", line.strip())
+            if match:
+                codec, width, height, seconds, fps, audio = match.groups()
+                formats[current] = "{} · {} × {} · {} fps · {} s · {}".format(
+                    CODECS.get(codec, codec), width, height, "{:g}".format(float(fps)),
+                    "{:g}".format(float(seconds)), "with audio" if audio else "no audio")
+            else:
+                formats[current] = line.strip()
+        elif line.strip():
+            current = line.strip()
+    return formats
