@@ -1,6 +1,6 @@
 # PUKEY Mods
 
-UE4SS Lua mods for the Windows Steam demo of **PUKEY GODDESS SHOT TRICK** (in-game title: *Drunken Goddess Reflux*, Steam AppID `5253020`).
+Drunken Goddess Reflux mods: UE4SS Lua mods and a mod manager for the Windows Steam demo of **PUKEY GODDESS SHOT TRICK** (in-game title: *Drunken Goddess Reflux*, Steam AppID `5253020`). The manager also sets up the UE4SS mod loader.
 
 Explore with a free camera, adjust lighting, or replace Fam's images and videos. Install only the mods you want; each works independently.
 
